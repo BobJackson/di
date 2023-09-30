@@ -26,7 +26,7 @@ class ContainerTest {
             };
             context.bind(Component.class, instance);
 
-            assertSame(instance, context.get(Component.class).orElseThrow(DependencyNotFoundException::new));
+            assertSame(instance, context.get(Component.class).get());
         }
 
 
@@ -47,7 +47,7 @@ class ContainerTest {
             void should_bind_type_to_a_class_with_default_constructor() {
                 context.bind(Component.class, ComponentWithDefaultConstructor.class);
 
-                var instance = context.get(Component.class).orElseThrow(DependencyNotFoundException::new);
+                var instance = context.get(Component.class).get();
 
                 assertNotNull(instance);
                 assertTrue(instance instanceof ComponentWithDefaultConstructor);
@@ -61,7 +61,7 @@ class ContainerTest {
                 context.bind(Component.class, ComponentWithInjectConstructor.class);
                 context.bind(Dependency.class, dependency);
 
-                Component instance = context.get(Component.class).orElseThrow(DependencyNotFoundException::new);
+                Component instance = context.get(Component.class).get();
 
                 assertNotNull(instance);
                 assertSame(dependency, ((ComponentWithInjectConstructor) instance).getDependency());
@@ -73,7 +73,7 @@ class ContainerTest {
                 context.bind(Dependency.class, DependencyWithInjectConstructor.class);
                 context.bind(String.class, "indirect dependency");
 
-                Component instance = context.get(Component.class).orElseThrow(DependencyNotFoundException::new);
+                Component instance = context.get(Component.class).get();
 
                 assertNotNull(instance);
 
@@ -101,7 +101,7 @@ class ContainerTest {
             void should_throw_exception_if_dependency_not_found() {
                 context.bind(Component.class, ComponentWithInjectConstructor.class);
 
-                assertThrows(DependencyNotFoundException.class, () -> context.get(Component.class).orElseThrow(DependencyNotFoundException::new));
+                assertThrows(DependencyNotFoundException.class, () -> context.get(Component.class).get());
             }
         }
 
