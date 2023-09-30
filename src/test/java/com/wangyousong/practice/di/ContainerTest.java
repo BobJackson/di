@@ -1,5 +1,6 @@
 package com.wangyousong.practice.di;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -7,20 +8,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ContainerTest {
 
-    interface Component {
+    Context context;
 
-    }
-
-    static class ComponentWithDefaultConstructor implements Component {
-        public ComponentWithDefaultConstructor() {
-        }
+    @BeforeEach
+    void setUp() {
+        context = new Context();
     }
 
     @Nested
     public class ComponentConstruction {
         @Test
         void should_bind_type_to_a_specific_instance() {
-            var context = new Context();
             var instance = new Component() {
             };
             context.bind(Component.class, instance);
@@ -37,7 +35,6 @@ class ContainerTest {
 
             @Test
             void should_bind_type_to_a_class_with_default_constructor() {
-                var context = new Context();
                 context.bind(Component.class, ComponentWithDefaultConstructor.class);
 
                 var instance = context.get(Component.class);
@@ -63,4 +60,13 @@ class ContainerTest {
 
     }
 
+}
+
+interface Component {
+
+}
+
+class ComponentWithDefaultConstructor implements Component {
+    public ComponentWithDefaultConstructor() {
+    }
 }
