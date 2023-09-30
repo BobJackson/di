@@ -74,8 +74,6 @@ class ContainerTest {
                 assertEquals("indirect dependency", ((DependencyWithInjectConstructor) dependency).getDependency());
             }
 
-            // TODO: multi inject constructors
-
             @Test
             void should_throw_exception_if_multi_inject_constructors_provided() {
                 assertThrows(IllegalComponentException.class, () -> {
