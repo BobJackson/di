@@ -13,7 +13,6 @@ class ContainerTest {
 
     @Nested
     public class ComponentConstruction {
-        // TODO: instance
         @Test
         void should_bind_type_to_a_specific_instance() {
             var context = new Context();
