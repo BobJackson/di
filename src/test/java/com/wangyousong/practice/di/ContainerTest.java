@@ -58,9 +58,6 @@ class ContainerTest {
                 assertSame(dependency, ((ComponentWithInjectConstructor) instance).getDependency());
             }
 
-
-            // TODO: A -> B -> C
-
             @Test
             void should_bind_type_to_a_class_with_transitive_dependencies() {
                 context.bind(Component.class, ComponentWithInjectConstructor.class);
