@@ -88,8 +88,6 @@ class ContainerTest {
                 });
             }
 
-
-            // TODO: no default constructor and inject constructor
             // TODO: dependencies not exist
         }
 
