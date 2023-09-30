@@ -71,8 +71,28 @@ class ContainerTest {
                 Dependency dependency = ((ComponentWithInjectConstructor) instance).getDependency();
                 assertNotNull(dependency);
 
-                assertEquals("indirect dependency", ((DependencyWithInjectConstructor)dependency).getDependency());
+                assertEquals("indirect dependency", ((DependencyWithInjectConstructor) dependency).getDependency());
             }
+
+            // TODO: multi inject constructors
+
+            @Test
+            void should_throw_exception_if_multi_inject_constructors_provided() {
+                assertThrows(IllegalComponentException.class, () -> {
+                    context.bind(Component.class, ComponentWithMultiInjectConstructors.class);
+                });
+            }
+
+            @Test
+            void should_throw_exception_if_no_inject_nor_default_constructor_provided() {
+                assertThrows(IllegalComponentException.class, () -> {
+                    context.bind(Component.class, ComponentWithNoInjectConstructorNorDefaultConstructor.class);
+                });
+            }
+
+
+            // TODO: no default constructor and inject constructor
+            // TODO: dependencies not exist
         }
 
     }
@@ -112,6 +132,21 @@ class ComponentWithInjectConstructor implements Component {
 
     public Dependency getDependency() {
         return dependency;
+    }
+}
+
+class ComponentWithMultiInjectConstructors implements Component {
+    @Inject
+    public ComponentWithMultiInjectConstructors(String name, Double value) {
+    }
+
+    @Inject
+    public ComponentWithMultiInjectConstructors(String name) {
+    }
+}
+
+class ComponentWithNoInjectConstructorNorDefaultConstructor implements Component {
+    public ComponentWithNoInjectConstructorNorDefaultConstructor(String name) {
     }
 }
 
