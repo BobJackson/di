@@ -1,6 +1,7 @@
 package com.wangyousong.practice.di;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class CyclicDependenciesFoundException extends RuntimeException {
@@ -14,6 +15,10 @@ public class CyclicDependenciesFoundException extends RuntimeException {
     public CyclicDependenciesFoundException(Class<?> componentType, CyclicDependenciesFoundException e) {
         components.add(componentType);
         components.addAll(e.components);
+    }
+
+    public CyclicDependenciesFoundException(List<Class<?>> visiting) {
+        components.addAll(visiting);
     }
 
 

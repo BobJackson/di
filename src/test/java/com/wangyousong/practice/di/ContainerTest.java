@@ -111,7 +111,7 @@ class ContainerTest {
             }
 
             @Test
-            void should_throw_exception_if_transitive_dependency_found() {
+            void should_throw_exception_if_transitive_dependency_not_found() {
                 config.bind(Component.class, ComponentWithInjectConstructor.class);
                 config.bind(Dependency.class, DependencyWithInjectConstructor.class);
 
