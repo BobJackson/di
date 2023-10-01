@@ -87,7 +87,6 @@ class ContainerTest {
                 public AbstractComponent() {
                 }
             }
-            // TODO: abstract class
 
             @Test
             void should_throw_exception_if_component_is_abstract() {
@@ -96,7 +95,12 @@ class ContainerTest {
                 });
             }
 
-            // TODO: interface
+            @Test
+            void should_throw_exception_if_component_is_interface() {
+                assertThrows(IllegalComponentException.class, () -> {
+                    new ConstructorInjectionProvider<>(Component.class);
+                });
+            }
 
             @Test
             void should_throw_exception_if_multi_inject_constructors_provided() {
