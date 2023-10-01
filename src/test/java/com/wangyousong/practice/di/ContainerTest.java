@@ -115,7 +115,7 @@ class ContainerTest {
                 config.bind(Component.class, ComponentWithInjectConstructor.class);
                 config.bind(Dependency.class, DependencyWithInjectConstructor.class);
 
-                DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext().get(Component.class));
+                DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
 
                 assertEquals(String.class, e.getDependency());
                 assertEquals(Dependency.class, e.getComponent());
