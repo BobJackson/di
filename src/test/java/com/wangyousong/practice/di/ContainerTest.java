@@ -270,7 +270,35 @@ class ContainerTest {
             assertEquals(2, component.subCalled);
         }
 
-        // TODO: include dependencies from inject methods
+        static class SubclassOverrideSuperclassWithInject extends SuperClassWithInjectMethod {
+            @Inject
+            void install() {
+                super.install();
+            }
+        }
+
+        @Test
+        void should_only_call_once_if_subclass_override_inject_method_with_inject() {
+            config.bind(SubclassOverrideSuperclassWithInject.class, SubclassOverrideSuperclassWithInject.class);
+            SubclassOverrideSuperclassWithInject component = config.getContext().get(SubclassOverrideSuperclassWithInject.class).get();
+
+            assertEquals(1, component.supperCalled);
+        }
+
+        static class SubclassOverrideSuperclassWithNoInject extends SuperClassWithInjectMethod {
+
+            void install() {
+                super.install();
+            }
+        }
+
+        @Test
+        void should_not_call_inject_method_if_override_with_no_inject() {
+            config.bind(SubclassOverrideSuperclassWithNoInject.class, SubclassOverrideSuperclassWithNoInject.class);
+            SubclassOverrideSuperclassWithNoInject component = config.getContext().get(SubclassOverrideSuperclassWithNoInject.class).get();
+
+            assertEquals(0, component.supperCalled);
+        }
 
         @Test
         void should_include_dependencies_from_inject_methods() {
