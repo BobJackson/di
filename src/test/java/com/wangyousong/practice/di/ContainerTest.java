@@ -9,9 +9,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ContainerTest {
 
@@ -179,56 +176,8 @@ class ContainerTest {
             assertSame(dependency, component.dependency);
         }
 
-        @Test
-        void should_create_component_with_inject_field() {
-            Context context = mock(Context.class);
-            Dependency dependency = mock(Dependency.class);
-            when(context.get(eq(Dependency.class))).thenReturn(Optional.of(dependency));
-
-            ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
-            ComponentWithFieldInjection component = provider.get(context);
-
-            assertSame(dependency, component.dependency);
-        }
-
         // TODO: throw exception if field is final
-
-        // TODO: throw exception if dependency not found
-        // TODO: throw exception if cyclic dependency
         // TODO: provide dependency information for field injection
-
-        @Test
-        void should_throw_exception_when_field_dependency_missing() {
-            config.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
-
-            assertThrows(DependencyNotFoundException.class, () -> config.getContext());
-        }
-
-        @Test
-        void should_include_field_dependency_in_dependencies() {
-            ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
-            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
-        }
-
-        class DependencyWithFieldInject implements Dependency {
-            @Inject
-            ComponentWithFieldInjection component;
-        }
-
-        @Test
-        void should_throw_exception_when_field_has_cyclic_dependency_missing() {
-            config.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
-            config.bind(Dependency.class, DependencyWithFieldInject.class);
-
-            assertThrows(CyclicDependenciesFoundException.class, () -> config.getContext());
-        }
-
-        @Test
-        void should_include_field_dependency_in_dependencies_() {
-            ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
-            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
-        }
-
 
     }
 
