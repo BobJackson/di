@@ -157,6 +157,12 @@ class ContainerTest {
                     new ConstructorInjectionProvider<>(ComponentWithNoInjectConstructorNorDefaultConstructor.class);
                 });
             }
+
+            @Test
+            void should_include_dependency_from_inject_constructor() {
+                ConstructorInjectionProvider<ComponentWithInjectConstructor> provider = new ConstructorInjectionProvider<>(ComponentWithInjectConstructor.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
+            }
         }
 
     }
