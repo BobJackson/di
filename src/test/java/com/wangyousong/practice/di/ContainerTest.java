@@ -26,8 +26,6 @@ class ContainerTest {
             var instance = new Component() {
             };
             config.bind(Component.class, instance);
-
-
             Context context = config.getContext();
 
             assertSame(instance, context.get(Component.class).get());
