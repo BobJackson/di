@@ -242,7 +242,6 @@ class ContainerTest {
             assertSame(dependency, component.dependency);
         }
 
-        // TODO: override method from superclass
         static class SuperClassWithInjectMethod {
             int supperCalled = 0;
 
