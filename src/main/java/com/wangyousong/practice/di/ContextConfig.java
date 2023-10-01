@@ -22,7 +22,7 @@ public class ContextConfig {
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
-        providers.put(type, new ConstructorInjectionProvider<>(type, injectConstructor));
+        providers.put(type, new ConstructorInjectionProvider<>(injectConstructor));
         dependencies.put(type, stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList()));
     }
 
@@ -68,31 +68,21 @@ public class ContextConfig {
     }
 
     static class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
-        private final Class<?> componentType;
         private final Constructor<T> injectConstructor;
-        private boolean constructing;
 
-        public ConstructorInjectionProvider(Class<?> componentType, Constructor<T> injectConstructor) {
-            this.componentType = componentType;
+        public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
             this.injectConstructor = injectConstructor;
         }
 
         @Override
         public T get(Context context) {
             try {
-                if (constructing) throw new CyclicDependenciesFoundException(componentType);
-                constructing = true;
                 Object[] dependencies = stream(injectConstructor.getParameters())
-                        .map(p -> context.get(p.getType())
-                                .orElseThrow(() -> new DependencyNotFoundException(componentType, p.getType())))
+                        .map(p -> context.get(p.getType()).get())
                         .toArray(Object[]::new);
                 return injectConstructor.newInstance(dependencies);
-            } catch (CyclicDependenciesFoundException e) {
-                throw new CyclicDependenciesFoundException(componentType, e);
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
-            } finally {
-                constructing = false;
             }
         }
     }
