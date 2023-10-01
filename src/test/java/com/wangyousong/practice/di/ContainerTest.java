@@ -194,7 +194,7 @@ class ContainerTest {
         @Test
         void should_include_field_dependency_in_dependencies() {
             ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
-            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
+            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
         }
 
 
@@ -222,10 +222,36 @@ class ContainerTest {
             assertTrue(component.called);
         }
 
+        static class InjectMethodWithDependency {
+            Dependency dependency;
 
-        // TODO: inject method with dependencies will be injected
+            @Inject
+            void install(Dependency dependency) {
+                this.dependency = dependency;
+            }
+        }
+
+        @Test
+        void should_inject_dependency_via_inject_method() {
+            Dependency dependency = new Dependency() {
+            };
+            config.bind(Dependency.class, dependency);
+            config.bind(InjectMethodWithDependency.class, InjectMethodWithDependency.class);
+
+            InjectMethodWithDependency component = config.getContext().get(InjectMethodWithDependency.class).get();
+            assertSame(dependency, component.dependency);
+        }
+
+
         // TODO: override method from superclass
         // TODO: include dependencies from inject methods
+
+        @Test
+        void should_include_dependencies_from_inject_methods() {
+            ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
+            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
+        }
+
         // TODO: throw exception if type parameter defined
     }
 
