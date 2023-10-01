@@ -204,7 +204,17 @@ class ContainerTest {
             assertSame(dependency, component.dependency);
         }
 
-        // TODO: throw exception if field is final
+        static class FinalInjectField {
+            @Inject
+            final Dependency dependency = null;
+        }
+
+        @Test
+        void should_throw_exception_if_inject_field_is_final() {
+            assertThrows(IllegalComponentException.class, () -> {
+                new ConstructorInjectionProvider<>(FinalInjectField.class);
+            });
+        }
 
         @Test
         void should_include_field_dependency_in_dependencies() {
