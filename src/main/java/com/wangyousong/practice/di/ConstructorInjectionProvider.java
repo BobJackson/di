@@ -18,6 +18,7 @@ class ConstructorInjectionProvider<T> implements ContextConfig.ComponentProvider
 
 
     public ConstructorInjectionProvider(Class<T> component) {
+        if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         this.injectConstructor = getInjectConstructor(component);
         this.injectFields = getInjectFields(component);
         this.injectMethods = getInjectMethods(component);
