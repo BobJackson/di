@@ -242,8 +242,34 @@ class ContainerTest {
             assertSame(dependency, component.dependency);
         }
 
-
         // TODO: override method from superclass
+        static class SuperClassWithInjectMethod {
+            boolean supperCalled = false;
+
+            @Inject
+            void install() {
+                supperCalled = true;
+            }
+        }
+
+        static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
+            boolean subCalled = false;
+
+            @Inject
+            void installAnother() {
+                subCalled = true;
+            }
+        }
+
+        @Test
+        void should_inject_dependencies_via_inject_method_from_superclass() {
+            config.bind(SubClassWithInjectMethod.class, SubClassWithInjectMethod.class);
+            SubClassWithInjectMethod component = config.getContext().get(SubClassWithInjectMethod.class).get();
+
+            assertTrue(component.supperCalled);
+            assertTrue(component.subCalled);
+        }
+
         // TODO: include dependencies from inject methods
 
         @Test
