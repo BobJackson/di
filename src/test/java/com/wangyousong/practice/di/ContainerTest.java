@@ -157,12 +157,10 @@ class ContainerTest {
     @Nested
     public class FieldInjection {
 
-        class ComponentWithFieldInjection {
+        static class ComponentWithFieldInjection {
             @Inject
             Dependency dependency;
         }
-
-        // TODO: inject field
 
         @Test
         void should_inject_dependency_via_field() {
