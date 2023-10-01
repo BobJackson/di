@@ -12,22 +12,29 @@ import static java.util.Arrays.stream;
 
 public class ContextConfig {
     private final Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
-    private final Map<Class<?>, List<Class<?>>> dependencies = new HashMap<>();
 
     public <Type> void bind(Class<Type> type, Type instance) {
-        providers.put(type, context -> instance);
-        dependencies.put(type, List.of());
+        providers.put(type, new ComponentProvider<Type>() {
+            @Override
+            public Type get(Context context) {
+                return instance;
+            }
+
+            @Override
+            public List<Class<?>> getDependencies() {
+                return List.of();
+            }
+        });
     }
 
     public <Type, Implementation extends Type>
     void bind(Class<Type> type, Class<Implementation> implementation) {
         Constructor<Implementation> injectConstructor = getInjectConstructor(implementation);
         providers.put(type, new ConstructorInjectionProvider<>(injectConstructor));
-        dependencies.put(type, stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList()));
     }
 
     public Context getContext() {
-        dependencies.keySet().forEach(component -> checkDependency(component, new Stack<>()));
+        providers.keySet().forEach(component -> checkDependency(component, new Stack<>()));
 
         return new Context() {
             @Override
@@ -38,8 +45,8 @@ public class ContextConfig {
     }
 
     private void checkDependency(Class<?> component, Stack<Class<?>> visiting) {
-        for (Class<?> dependency : dependencies.get(component)) {
-            if (!dependencies.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
+        for (Class<?> dependency : providers.get(component).getDependencies()) {
+            if (!providers.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
             if (visiting.contains(dependency)) throw new CyclicDependenciesFoundException(visiting);
             visiting.push(dependency);
             checkDependency(dependency, visiting);
@@ -65,6 +72,8 @@ public class ContextConfig {
 
     interface ComponentProvider<T> {
         T get(Context context);
+
+        List<Class<?>> getDependencies();
     }
 
     static class ConstructorInjectionProvider<T> implements ComponentProvider<T> {
@@ -84,6 +93,11 @@ public class ContextConfig {
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        @Override
+        public List<Class<?>> getDependencies() {
+            return stream(injectConstructor.getParameters()).map(Parameter::getType).collect(Collectors.toList());
         }
     }
 }
