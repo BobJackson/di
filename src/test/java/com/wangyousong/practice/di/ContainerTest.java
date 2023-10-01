@@ -244,20 +244,20 @@ class ContainerTest {
 
         // TODO: override method from superclass
         static class SuperClassWithInjectMethod {
-            boolean supperCalled = false;
+            int supperCalled = 0;
 
             @Inject
             void install() {
-                supperCalled = true;
+                supperCalled++;
             }
         }
 
         static class SubClassWithInjectMethod extends SuperClassWithInjectMethod {
-            boolean subCalled = false;
+            int subCalled = 0;
 
             @Inject
             void installAnother() {
-                subCalled = true;
+                subCalled = supperCalled + 1;
             }
         }
 
@@ -266,8 +266,8 @@ class ContainerTest {
             config.bind(SubClassWithInjectMethod.class, SubClassWithInjectMethod.class);
             SubClassWithInjectMethod component = config.getContext().get(SubClassWithInjectMethod.class).get();
 
-            assertTrue(component.supperCalled);
-            assertTrue(component.subCalled);
+            assertEquals(1, component.supperCalled);
+            assertEquals(2, component.subCalled);
         }
 
         // TODO: include dependencies from inject methods

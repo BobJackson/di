@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.stream;
@@ -85,6 +86,7 @@ class ConstructorInjectionProvider<T> implements ContextConfig.ComponentProvider
                     .toList());
             current = current.getSuperclass();
         }
+        Collections.reverse(injectMethods);
         return injectMethods;
     }
 }
