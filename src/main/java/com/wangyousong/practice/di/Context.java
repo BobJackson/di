@@ -30,32 +30,6 @@ public class Context {
         return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get());
     }
 
-    class ConstructorInjectionProvider<T> implements Provider<T> {
-        private Constructor<T> injectConstructor;
-
-        private boolean constructing;
-
-        public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
-            this.injectConstructor = injectConstructor;
-        }
-        @Override
-        public T get() {
-            try {
-                if(constructing) throw new CyclicDependenciesFoundException();
-                constructing = true;
-                Object[] dependencies = stream(injectConstructor.getParameters())
-                        .map(p -> Context.this.get(p.getType()).orElseThrow(DependencyNotFoundException::new))
-                        .toArray(Object[]::new);
-                return injectConstructor.newInstance(dependencies);
-            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }finally {
-                constructing = false;
-            }
-        }
-
-    }
-
     private <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
         List<Constructor<?>> injectConstructors = stream(implementation.getConstructors())
                 .filter(c -> c.isAnnotationPresent(Inject.class))
@@ -70,5 +44,31 @@ public class Context {
                 throw new IllegalComponentException();
             }
         });
+    }
+
+    class ConstructorInjectionProvider<T> implements Provider<T> {
+        private Constructor<T> injectConstructor;
+
+        private boolean constructing;
+
+        public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
+            this.injectConstructor = injectConstructor;
+        }
+        @Override
+        public T get() {
+            try {
+                if(constructing) throw new CyclicDependenciesFoundException();
+                constructing = true;
+                Object[] dependencies = stream(injectConstructor.getParameters())
+                        .map(p -> Context.this.get(p.getType()).orElseThrow(()-> new DependencyNotFoundException(p.getType())))
+                        .toArray(Object[]::new);
+                return injectConstructor.newInstance(dependencies);
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }finally {
+                constructing = false;
+            }
+        }
+
     }
 }
