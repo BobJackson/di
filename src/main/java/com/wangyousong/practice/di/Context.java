@@ -26,14 +26,18 @@ public class Context {
         providers.put(type, new ConstructorInjectionProvider<>(injectConstructor));
     }
 
+    public <Type> Optional<Type> get(Class<Type> type) {
+        return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get());
+    }
+
     class ConstructorInjectionProvider<T> implements Provider<T> {
         private Constructor<T> injectConstructor;
+
         private boolean constructing;
 
         public ConstructorInjectionProvider(Constructor<T> injectConstructor) {
             this.injectConstructor = injectConstructor;
         }
-
         @Override
         public T get() {
             try {
@@ -49,6 +53,7 @@ public class Context {
                 constructing = false;
             }
         }
+
     }
 
     private <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
@@ -65,9 +70,5 @@ public class Context {
                 throw new IllegalComponentException();
             }
         });
-    }
-
-    public <Type> Optional<Type> get(Class<Type> type) {
-        return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get());
     }
 }
