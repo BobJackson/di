@@ -162,6 +162,9 @@ class ContainerTest {
             Dependency dependency;
         }
 
+        static class SubclassWithFieldInjection extends ComponentWithFieldInjection {
+        }
+
         @Test
         void should_inject_dependency_via_field() {
             Dependency dependency = new Dependency() {
@@ -174,7 +177,27 @@ class ContainerTest {
             assertSame(dependency, component.dependency);
         }
 
+        @Test
+        void should_inject_dependency_via_superclass_inject_field() {
+            Dependency dependency = new Dependency() {
+            };
+            config.bind(Dependency.class, dependency);
+            config.bind(SubclassWithFieldInjection.class, SubclassWithFieldInjection.class);
+
+            SubclassWithFieldInjection component = config.getContext().get(SubclassWithFieldInjection.class).get();
+
+            assertSame(dependency, component.dependency);
+        }
+
         // TODO: throw exception if field is final
+
+        @Test
+        void should_include_field_dependency_in_dependencies() {
+            ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray());
+        }
+
+
         // TODO: provide dependency information for field injection
 
     }
