@@ -338,8 +338,6 @@ class ContainerTest {
             ConstructorInjectionProvider<InjectMethodWithDependency> provider = new ConstructorInjectionProvider<>(InjectMethodWithDependency.class);
             assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
         }
-
-        // TODO: throw exception if type parameter defined
     }
 
 
