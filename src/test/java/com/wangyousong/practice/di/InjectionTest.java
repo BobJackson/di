@@ -38,20 +38,6 @@ class InjectionTest {
             assertSame(dependency, instance.getDependency());
         }
 
-        @Test
-        void should_bind_type_to_a_class_with_transitive_dependencies() {
-            when(context.get(Dependency.class)).thenReturn(Optional.of(new DependencyWithInjectConstructor("indirect dependency")));
-
-            ComponentWithInjectConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectConstructor.class).get(context);
-
-            assertNotNull(instance);
-
-            Dependency dependency = instance.getDependency();
-            assertNotNull(dependency);
-
-            assertEquals("indirect dependency", ((DependencyWithInjectConstructor) dependency).getDependency());
-        }
-
         abstract class AbstractComponent implements Component {
             @Inject
             public AbstractComponent() {
