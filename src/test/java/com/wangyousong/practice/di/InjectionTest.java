@@ -17,9 +17,6 @@ class InjectionTest {
 
     @BeforeEach
     void setUp() {
-        ContextConfig config = new ContextConfig();
-        config.bind(Dependency.class, dependency);
-
         when(context.get(Dependency.class)).thenReturn(Optional.of(dependency));
     }
 
@@ -28,29 +25,28 @@ class InjectionTest {
 
         @Test
         void should_bind_type_to_a_class_with_default_constructor() {
-            Component instance = new ConstructorInjectionProvider<>(ComponentWithDefaultConstructor.class).get(context);
+            ComponentWithDefaultConstructor instance = new ConstructorInjectionProvider<>(ComponentWithDefaultConstructor.class).get(context);
 
             assertNotNull(instance);
-            assertTrue(instance instanceof ComponentWithDefaultConstructor);
         }
 
         @Test
         void should_bind_type_to_a_class_with_inject_constructor() {
-            Component instance = new ConstructorInjectionProvider<>(ComponentWithInjectConstructor.class).get(context);
+            ComponentWithInjectConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectConstructor.class).get(context);
 
             assertNotNull(instance);
-            assertSame(dependency, ((ComponentWithInjectConstructor) instance).getDependency());
+            assertSame(dependency, instance.getDependency());
         }
 
         @Test
         void should_bind_type_to_a_class_with_transitive_dependencies() {
             when(context.get(Dependency.class)).thenReturn(Optional.of(new DependencyWithInjectConstructor("indirect dependency")));
 
-            Component instance = new ConstructorInjectionProvider<>(ComponentWithInjectConstructor.class).get(context);
+            ComponentWithInjectConstructor instance = new ConstructorInjectionProvider<>(ComponentWithInjectConstructor.class).get(context);
 
             assertNotNull(instance);
 
-            Dependency dependency = ((ComponentWithInjectConstructor) instance).getDependency();
+            Dependency dependency = instance.getDependency();
             assertNotNull(dependency);
 
             assertEquals("indirect dependency", ((DependencyWithInjectConstructor) dependency).getDependency());
