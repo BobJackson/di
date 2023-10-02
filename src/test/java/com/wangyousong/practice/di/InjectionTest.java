@@ -102,45 +102,55 @@ class InjectionTest {
     @Nested
     public class FieldInjection {
 
-        static class ComponentWithFieldInjection {
-            @Inject
-            Dependency dependency;
+        @Nested
+        class Injection {
+            static class ComponentWithFieldInjection {
+                @Inject
+                Dependency dependency;
+            }
+
+            static class SubclassWithFieldInjection extends ComponentWithFieldInjection {
+            }
+
+            @Test
+            void should_inject_dependency_via_field() {
+                ComponentWithFieldInjection component = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class).get(context);
+
+                assertSame(dependency, component.dependency);
+            }
+
+            @Test
+            void should_inject_dependency_via_superclass_inject_field() {
+                SubclassWithFieldInjection component = new ConstructorInjectionProvider<>(SubclassWithFieldInjection.class).get(context);
+
+                assertSame(dependency, component.dependency);
+            }
+
+            @Test
+            void should_include_dependency_from_field_dependency() {
+                ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+                assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
+            }
         }
 
-        static class SubclassWithFieldInjection extends ComponentWithFieldInjection {
+        @Nested
+        class IllegalInjectFields {
+            static class FinalInjectField {
+                @Inject
+                final Dependency dependency = null;
+            }
+
+            @Test
+            void should_throw_exception_if_inject_field_is_final() {
+                assertThrows(IllegalComponentException.class, () -> {
+                    new ConstructorInjectionProvider<>(FinalInjectField.class);
+                });
+            }
         }
+    }
 
-        @Test
-        void should_inject_dependency_via_field() {
-            ComponentWithFieldInjection component = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class).get(context);
-
-            assertSame(dependency, component.dependency);
-        }
-
-        @Test
-        void should_inject_dependency_via_superclass_inject_field() {
-            SubclassWithFieldInjection component = new ConstructorInjectionProvider<>(SubclassWithFieldInjection.class).get(context);
-
-            assertSame(dependency, component.dependency);
-        }
-
-        static class FinalInjectField {
-            @Inject
-            final Dependency dependency = null;
-        }
-
-        @Test
-        void should_throw_exception_if_inject_field_is_final() {
-            assertThrows(IllegalComponentException.class, () -> {
-                new ConstructorInjectionProvider<>(FieldInjection.FinalInjectField.class);
-            });
-        }
-
-        @Test
-        void should_include_field_dependency_in_dependencies() {
-            ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
-            assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
-        }
+    @Nested
+    public class MethodInjection {
 
         static class InjectMethodWithTypeParameter {
             @Inject
@@ -151,13 +161,11 @@ class InjectionTest {
         @Test
         void should_throw_exception_if_inject_method_has_type_parameter() {
             assertThrows(IllegalComponentException.class, () -> {
-                new ConstructorInjectionProvider<>(FieldInjection.InjectMethodWithTypeParameter.class);
+                new ConstructorInjectionProvider<>(InjectMethodWithTypeParameter.class);
             });
         }
-    }
 
-    @Nested
-    public class MethodInjection {
+
         static class InjectMethodWithNoDependency {
             boolean called = false;
 
