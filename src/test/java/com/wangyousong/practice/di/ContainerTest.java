@@ -106,11 +106,6 @@ interface AnotherDependency {
 
 }
 
-class ComponentWithDefaultConstructor implements Component {
-    public ComponentWithDefaultConstructor() {
-    }
-}
-
 class ComponentWithInjectConstructor implements Component {
     private Dependency dependency;
 
