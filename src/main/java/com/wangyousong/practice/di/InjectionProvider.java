@@ -11,13 +11,13 @@ import java.util.List;
 import static java.util.Arrays.stream;
 import static java.util.stream.Stream.concat;
 
-class ConstructorInjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
+class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     private final Constructor<T> injectConstructor;
     private final List<Field> injectFields;
     private final List<Method> injectMethods;
 
 
-    public ConstructorInjectionProvider(Class<T> component) {
+    public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
         this.injectConstructor = getInjectConstructor(component);
         this.injectFields = getInjectFields(component);
