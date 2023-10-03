@@ -79,12 +79,14 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         return injectFields;
     }
 
-    private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
+    @SuppressWarnings("unchecked")
+    private static <T> Constructor<T> getInjectConstructor(Class<T> implementation) {
         List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
-
         if (injectConstructors.size() > 1) throw new IllegalComponentException();
-
-        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
+        return (Constructor<T>) injectConstructors
+                .stream()
+                .findFirst()
+                .orElseGet(() -> defaultConstructor(implementation));
     }
 
     private static <Type> Constructor<Type> defaultConstructor(Class<Type> implementation) {
