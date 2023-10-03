@@ -33,21 +33,21 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            Object[] dependencies = stream(injectConstructor.getParameters())
-                    .map(p -> context.get(p.getType()).get())
-                    .toArray(Object[]::new);
-            T instance = injectConstructor.newInstance(dependencies);
+            T instance = injectConstructor.newInstance(toDependencies(context, injectConstructor));
             for (Field field : injectFields) {
                 field.set(instance, context.get(field.getType()).get());
             }
             for (Method method : injectMethods) {
-                method.invoke(instance, stream(method.getParameterTypes()).map(t -> context.get(t).get())
-                        .toArray());
+                method.invoke(instance, toDependencies(context, method));
             }
             return instance;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Object[] toDependencies(Context context, Executable executable) {
+        return stream(executable.getParameterTypes()).map(t -> context.get(t).get()).toArray(Object[]::new);
     }
 
     @Override
