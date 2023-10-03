@@ -89,12 +89,44 @@ class InjectionTest {
                 });
             }
 
+            class ComponentWithMultiInjectConstructors implements Component {
+                @Inject
+                Dependency dependency;
+
+                @Inject
+                public ComponentWithMultiInjectConstructors(String name, Double value) {
+                }
+
+                @Inject
+                public ComponentWithMultiInjectConstructors(String name) {
+                }
+
+                @Override
+                public Dependency dependency() {
+                    return dependency;
+                }
+            }
+
             @Test
             void should_throw_exception_if_no_inject_nor_default_constructor_provided() {
                 assertThrows(IllegalComponentException.class, () -> {
                     new InjectionProvider<>(ComponentWithNoInjectConstructorNorDefaultConstructor.class);
                 });
             }
+
+            class ComponentWithNoInjectConstructorNorDefaultConstructor implements Component {
+                @Inject
+                Dependency dependency;
+
+                public ComponentWithNoInjectConstructorNorDefaultConstructor(String name) {
+                }
+
+                @Override
+                public Dependency dependency() {
+                    return dependency;
+                }
+            }
+
         }
 
     }
