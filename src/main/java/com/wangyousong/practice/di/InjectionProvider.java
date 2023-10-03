@@ -35,7 +35,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         try {
             T instance = injectConstructor.newInstance(toDependencies(context, injectConstructor));
             for (Field field : injectFields) {
-                field.set(instance, context.get(field.getType()).get());
+                field.set(instance, toDependency(context, field));
             }
             for (Method method : injectMethods) {
                 method.invoke(instance, toDependencies(context, method));
@@ -84,13 +84,15 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
 
         if (injectConstructors.size() > 1) throw new IllegalComponentException();
 
-        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> {
-            try {
-                return implementation.getDeclaredConstructor();
-            } catch (NoSuchMethodException e) {
-                throw new IllegalComponentException();
-            }
-        });
+        return (Constructor<Type>) injectConstructors.stream().findFirst().orElseGet(() -> defaultConstructor(implementation));
+    }
+
+    private static <Type> Constructor<Type> defaultConstructor(Class<Type> implementation) {
+        try {
+            return implementation.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalComponentException();
+        }
     }
 
     private static <T extends AnnotatedElement> Stream<T> injectable(T[] annotatedElements) {
@@ -113,5 +115,9 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
 
     private static Object[] toDependencies(Context context, Executable executable) {
         return stream(executable.getParameterTypes()).map(t -> context.get(t).get()).toArray(Object[]::new);
+    }
+
+    private static Object toDependency(Context context, Field field) {
+        return context.get(field.getType()).get();
     }
 }
