@@ -64,11 +64,9 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         Class<?> current = component;
         while (current != Object.class) {
             injectMethods.addAll(injectable(current.getDeclaredMethods())
-                    .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName()) &&
-                            Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+                    .filter(m -> injectMethods.stream().noneMatch(o -> isOverride(m, o)))
                     .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
-                            .noneMatch(o -> o.getName().equals(m.getName()) &&
-                                    Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+                            .noneMatch(o -> isOverride(m, o)))
 
                     .toList());
             current = current.getSuperclass();
@@ -103,5 +101,9 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
 
     private static <T extends AnnotatedElement> Stream<T> injectable(T[] annotatedElements) {
         return stream(annotatedElements).filter(f -> f.isAnnotationPresent(Inject.class));
+    }
+
+    private static boolean isOverride(Method m, Method o) {
+        return o.getName().equals(m.getName()) && Arrays.equals(o.getParameterTypes(), m.getParameterTypes());
     }
 }
