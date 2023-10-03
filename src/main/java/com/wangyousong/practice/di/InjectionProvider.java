@@ -46,10 +46,6 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         }
     }
 
-    private Object[] toDependencies(Context context, Executable executable) {
-        return stream(executable.getParameterTypes()).map(t -> context.get(t).get()).toArray(Object[]::new);
-    }
-
     @Override
     public List<Class<?>> getDependencies() {
         return concat(concat(
@@ -113,5 +109,9 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         return stream(component.getDeclaredMethods())
                 .filter(m1 -> !m1.isAnnotationPresent(Inject.class))
                 .noneMatch(o -> isOverride(m, o));
+    }
+
+    private static Object[] toDependencies(Context context, Executable executable) {
+        return stream(executable.getParameterTypes()).map(t -> context.get(t).get()).toArray(Object[]::new);
     }
 }
