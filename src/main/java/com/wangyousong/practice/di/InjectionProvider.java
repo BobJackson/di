@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Stream.concat;
@@ -58,10 +59,36 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         ).toList();
     }
 
+    private static <T> List<Method> getInjectMethods(Class<T> component) {
+        List<Method> injectMethods = new ArrayList<>();
+        Class<?> current = component;
+        while (current != Object.class) {
+            injectMethods.addAll(injectable(current.getDeclaredMethods())
+                    .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName()) &&
+                            Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+                    .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
+                            .noneMatch(o -> o.getName().equals(m.getName()) &&
+                                    Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
+
+                    .toList());
+            current = current.getSuperclass();
+        }
+        Collections.reverse(injectMethods);
+        return injectMethods;
+    }
+
+    private static <T> List<Field> getInjectFields(Class<T> component) {
+        List<Field> injectFields = new ArrayList<>();
+        Class<?> current = component;
+        while (current != Object.class) {
+            injectFields.addAll(injectable(current.getDeclaredFields()).toList());
+            current = current.getSuperclass();
+        }
+        return injectFields;
+    }
+
     private static <Type> Constructor<Type> getInjectConstructor(Class<Type> implementation) {
-        List<Constructor<?>> injectConstructors = stream(implementation.getConstructors())
-                .filter(c -> c.isAnnotationPresent(Inject.class))
-                .toList();
+        List<Constructor<?>> injectConstructors = injectable(implementation.getConstructors()).toList();
 
         if (injectConstructors.size() > 1) throw new IllegalComponentException();
 
@@ -74,33 +101,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         });
     }
 
-    private static <T> List<Field> getInjectFields(Class<T> component) {
-        List<Field> injectFields = new ArrayList<>();
-        Class<?> current = component;
-        while (current != Object.class) {
-            injectFields.addAll(stream(current.getDeclaredFields()).filter(f -> f.isAnnotationPresent(Inject.class))
-                    .toList());
-            current = current.getSuperclass();
-        }
-        return injectFields;
-    }
-
-    private static <T> List<Method> getInjectMethods(Class<T> component) {
-        List<Method> injectMethods = new ArrayList<>();
-        Class<?> current = component;
-        while (current != Object.class) {
-            injectMethods.addAll(stream(current.getDeclaredMethods())
-                    .filter(m -> m.isAnnotationPresent(Inject.class))
-                    .filter(m -> injectMethods.stream().noneMatch(o -> o.getName().equals(m.getName()) &&
-                            Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
-                    .filter(m -> stream(component.getDeclaredMethods()).filter(m1 -> !m1.isAnnotationPresent(Inject.class))
-                            .noneMatch(o -> o.getName().equals(m.getName()) &&
-                                    Arrays.equals(o.getParameterTypes(), m.getParameterTypes())))
-
-                    .toList());
-            current = current.getSuperclass();
-        }
-        Collections.reverse(injectMethods);
-        return injectMethods;
+    private static <T extends AnnotatedElement> Stream<T> injectable(T[] annotatedElements) {
+        return stream(annotatedElements).filter(f -> f.isAnnotationPresent(Inject.class));
     }
 }
