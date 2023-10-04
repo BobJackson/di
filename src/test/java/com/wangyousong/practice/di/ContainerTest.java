@@ -8,6 +8,22 @@ class ContainerTest {
     @Nested
     public class DependenciesSelection {
 
+        @Nested
+        public class ProviderType {
+            // Context
+            // TODO: could get Provider<T> from context
+
+            // Inject Provider
+            // TODO: support inject constructor
+            // TODO: support inject field
+            // TODO: support inject method
+        }
+
+        @Nested
+        public class Qualifier {
+
+        }
+
     }
 
     @Nested
