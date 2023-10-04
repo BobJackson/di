@@ -42,13 +42,22 @@ public class ContextConfig {
     }
 
     private void checkDependency(Class<?> component, Stack<Class<?>> visiting) {
-        for (Class<?> dependency : providers.get(component).getDependencies()) {
-            if (!providers.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
-            if (visiting.contains(dependency)) throw new CyclicDependenciesFoundException(visiting);
-            visiting.push(dependency);
-            checkDependency(dependency, visiting);
-            visiting.pop();
+        for (Type dependency : providers.get(component).getDependencyTypes()) {
+            if (dependency instanceof Class<?>)
+                checkDependency(component, visiting, (Class<?>) dependency);
+            if (dependency instanceof ParameterizedType) {
+                Class<?> type = (Class<?>) ((ParameterizedType) dependency).getActualTypeArguments()[0];
+                if (!providers.containsKey(type)) throw new DependencyNotFoundException(component, type);
+            }
         }
+    }
+
+    private void checkDependency(Class<?> component, Stack<Class<?>> visiting, Class<?> dependency) {
+        if (!providers.containsKey(dependency)) throw new DependencyNotFoundException(component, dependency);
+        if (visiting.contains(dependency)) throw new CyclicDependenciesFoundException(visiting);
+        visiting.push(dependency);
+        checkDependency(dependency, visiting);
+        visiting.pop();
     }
 
     interface ComponentProvider<T> {
