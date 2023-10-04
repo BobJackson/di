@@ -30,6 +30,7 @@ public class ContextConfig {
             @SuppressWarnings("unchecked")
             @Override
             public <T> Optional<T> get(ParameterizedType type) {
+                if (type.getRawType() != Provider.class) return Optional.empty();
                 Class<T> componentType = (Class<T>) type.getActualTypeArguments()[0];
                 return (Optional<T>) Optional.ofNullable(providers.get(componentType))
                         .map(provider -> (Provider<T>) () -> (T) provider.get(this));
