@@ -1,5 +1,8 @@
 package com.wangyousong.practice.di;
 
+import jakarta.inject.Provider;
+
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 public class ContextConfig {
@@ -18,9 +21,18 @@ public class ContextConfig {
         providers.keySet().forEach(component -> checkDependency(component, new Stack<>()));
 
         return new Context() {
+            @SuppressWarnings("unchecked")
             @Override
             public <Type> Optional<Type> get(Class<Type> type) {
                 return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(this));
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public <T> Optional<T> get(ParameterizedType type) {
+                Class<T> componentType = (Class<T>) type.getActualTypeArguments()[0];
+                return (Optional<T>) Optional.ofNullable(providers.get(componentType))
+                        .map(provider -> (Provider<T>) () -> (T) provider.get(this));
             }
         };
     }

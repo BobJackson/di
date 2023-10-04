@@ -57,6 +57,10 @@ class InjectionTest {
                 InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
             }
+
+            // Inject Provider
+            // TODO: support inject constructor
+
         }
 
         @Nested
@@ -163,6 +167,8 @@ class InjectionTest {
                 InjectionProvider<ComponentWithFieldInjection> provider = new InjectionProvider<>(ComponentWithFieldInjection.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
             }
+
+            // TODO: support inject field
         }
 
         @Nested
@@ -277,6 +283,8 @@ class InjectionTest {
                 InjectionProvider<InjectMethodWithDependency> provider = new InjectionProvider<>(InjectMethodWithDependency.class);
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
             }
+
+            // TODO: support inject method
         }
 
         @Nested
