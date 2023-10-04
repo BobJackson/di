@@ -301,7 +301,20 @@ class InjectionTest {
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
             }
 
-            // TODO: support inject method
+            static class ProviderInjectMethod {
+                Provider<Dependency> dependency;
+
+                @Inject
+                void install(Provider<Dependency> dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            @Test
+            void should_inject_provider_via_inject_method() {
+                ProviderInjectMethod component = new InjectionProvider<>(ProviderInjectMethod.class).get(context);
+                assertSame(dependencyProvider, component.dependency);
+            }
         }
 
         @Nested
