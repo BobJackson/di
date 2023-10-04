@@ -1,10 +1,12 @@
 package com.wangyousong.practice.di;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,10 +16,13 @@ import static org.mockito.Mockito.when;
 class InjectionTest {
     private final Dependency dependency = mock(Dependency.class);
     private final Context context = mock(Context.class);
+    private final Provider<Dependency> dependencyProvider = mock(Provider.class);
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws NoSuchFieldException {
+        ParameterizedType providerType = (ParameterizedType) InjectionTest.class.getDeclaredField("dependencyProvider").getGenericType();
         when(context.get(Dependency.class)).thenReturn(Optional.of(dependency));
+        when(context.get(providerType)).thenReturn(Optional.of(dependencyProvider));
     }
 
     @Nested
@@ -58,9 +63,21 @@ class InjectionTest {
                 assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(Class<?>[]::new));
             }
 
-            // Inject Provider
-            // TODO: support inject constructor
+            static class ProviderInjectConstructor {
+                Provider<Dependency> dependency;
 
+                @Inject
+                public ProviderInjectConstructor(Provider<Dependency> dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            @Test
+            void should_inject_provider_via_inject_constructor() {
+                ProviderInjectConstructor instance = new InjectionProvider<>(ProviderInjectConstructor.class).get(context);
+
+                assertSame(dependencyProvider, instance.dependency);
+            }
         }
 
         @Nested
