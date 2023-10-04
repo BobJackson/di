@@ -158,6 +158,9 @@ class ContextTest {
                     Arguments.of(Named.of("Constructor Injection", MissingDependencyConstructor.class)),
                     Arguments.of(Named.of("Field Injection", MissingDependencyField.class)),
                     Arguments.of(Named.of("Method Injection", MissingDependencyMethod.class))
+//                   TODO: Arguments.of(Named.of("Provider in Injection Constructor", MissingDependencyProviderConstructor.class))
+                    // TODO: provider in inject field
+                    // TODO: provider in inject method
             );
         }
 
@@ -175,6 +178,13 @@ class ContextTest {
         static class MissingDependencyMethod implements Component {
             @Inject
             void install(Dependency dependency) {
+            }
+        }
+
+        static class MissingDependencyProviderConstructor implements Component {
+            @Inject
+            public MissingDependencyProviderConstructor(Provider<Dependency> dependency) {
+
             }
         }
 

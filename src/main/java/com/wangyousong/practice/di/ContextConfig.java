@@ -3,7 +3,10 @@ package com.wangyousong.practice.di;
 import jakarta.inject.Provider;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
+
+import static java.util.List.of;
 
 public class ContextConfig {
     private final Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
@@ -52,7 +55,11 @@ public class ContextConfig {
         T get(Context context);
 
         default List<Class<?>> getDependencies() {
-            return List.of();
+            return of();
+        }
+
+        default List<Type> getDependencyTypes() {
+            return of();
         }
     }
 
