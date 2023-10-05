@@ -6,4 +6,6 @@ import java.util.Optional;
 public interface Context {
 
     <T> Optional<T> get(Type type);
+
+    // Optional<T> get(Ref ref)
 }
