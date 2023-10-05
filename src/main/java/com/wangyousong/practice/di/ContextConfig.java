@@ -24,19 +24,23 @@ public class ContextConfig {
         providers.keySet().forEach(component -> checkDependency(component, new Stack<>()));
 
         return new Context() {
-            @SuppressWarnings("unchecked")
             @Override
-            public <Type> Optional<Type> get(Class<Type> type) {
-                return Optional.ofNullable(providers.get(type)).map(provider -> (Type) provider.get(this));
+            public <T> Optional<T> getType(Type type) {
+                if (type instanceof ParameterizedType) return get((ParameterizedType) type);
+                return (Optional<T>) get((Class<?>) type);
             }
 
             @SuppressWarnings("unchecked")
-            @Override
-            public <T> Optional<T> get(ParameterizedType type) {
+            private <T> Optional<T> get(ParameterizedType type) {
                 if (type.getRawType() != Provider.class) return Optional.empty();
                 Class<T> componentType = (Class<T>) type.getActualTypeArguments()[0];
                 return (Optional<T>) Optional.ofNullable(providers.get(componentType))
                         .map(provider -> (Provider<T>) () -> (T) provider.get(this));
+            }
+
+            @SuppressWarnings("unchecked")
+            private <T> Optional<T> get(Class<T> type) {
+                return Optional.ofNullable(providers.get(type)).map(provider -> (T) provider.get(this));
             }
         };
     }
