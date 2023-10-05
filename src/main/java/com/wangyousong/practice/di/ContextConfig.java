@@ -25,7 +25,7 @@ public class ContextConfig {
 
         return new Context() {
             @Override
-            public <T> Optional<T> getType(Type type) {
+            public <T> Optional<T> get(Type type) {
                 if (type instanceof ParameterizedType) return get((ParameterizedType) type);
                 return (Optional<T>) get((Class<?>) type);
             }

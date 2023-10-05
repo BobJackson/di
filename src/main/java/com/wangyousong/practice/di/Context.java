@@ -5,5 +5,5 @@ import java.util.Optional;
 
 public interface Context {
 
-    <T> Optional<T> getType(Type type);
+    <T> Optional<T> get(Type type);
 }
