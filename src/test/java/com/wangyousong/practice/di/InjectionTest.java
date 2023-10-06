@@ -269,10 +269,26 @@ class InjectionTest {
 
         @Nested
         class WithQualifier {
+
+            @BeforeEach
+            void setUp() {
+                Mockito.reset(context);
+                when(context.get(eq(ComponentRef.of(Dependency.class, new NamedLiteral("ChosenOne")))))
+                        .thenReturn(Optional.of(dependency));
+            }
+
             static class InjectField {
                 @Inject
                 @Named("ChosenOne")
                 Dependency dependency;
+            }
+
+            @Test
+            void should_inject_dependency_with_qualifier_via_field() {
+                InjectionProvider<InjectField> provider = new InjectionProvider<>(InjectField.class);
+                InjectField component = provider.get(context);
+
+                assertSame(dependency, component.dependency);
             }
 
             @Test
@@ -282,7 +298,6 @@ class InjectionTest {
                         provider.getDependencies().toArray(ComponentRef[]::new));
             }
 
-            // TODO: include qualifier with dependency
             // TODO: throw illegal component if illegal qualifier given to injection point
         }
     }
@@ -424,10 +439,29 @@ class InjectionTest {
 
         @Nested
         class WithQualifier {
+
+            @BeforeEach
+            void setUp() {
+                Mockito.reset(context);
+                when(context.get(eq(ComponentRef.of(Dependency.class, new NamedLiteral("ChosenOne")))))
+                        .thenReturn(Optional.of(dependency));
+            }
+
             static class InjectMethod {
+                private Dependency dependency;
+
                 @Inject
                 void install(@Named("ChosenOne") Dependency dependency) {
+                    this.dependency = dependency;
                 }
+            }
+
+            @Test
+            void should_inject_dependency_with_qualifier_via_inject_method() {
+                InjectionProvider<InjectMethod> provider = new InjectionProvider<>(InjectMethod.class);
+                InjectMethod component = provider.get(context);
+
+                assertSame(dependency, component.dependency);
             }
 
             @Test
