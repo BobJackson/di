@@ -63,7 +63,7 @@ public interface Context {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Ref ref = (Ref) o;
+            Ref<?> ref = (Ref<?>) o;
             return Objects.equals(container, ref.container) && component.equals(ref.component);
         }
 
