@@ -6,6 +6,7 @@ import jakarta.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
@@ -162,10 +163,29 @@ class InjectionTest {
 
         @Nested
         class WithQualifier {
+
+            @BeforeEach
+            void setUp() {
+                Mockito.reset(context);
+                when(context.get(eq(ComponentRef.of(Dependency.class, new NamedLiteral("ChosenOne")))))
+                        .thenReturn(Optional.of(dependency));
+            }
+
             static class InjectConstructor {
+                private Dependency dependency;
+
                 @Inject
                 public InjectConstructor(@Named("ChosenOne") Dependency dependency) {
+                    this.dependency = dependency;
                 }
+            }
+
+            @Test
+            void should_inject_dependency_via_inject_constructor() {
+                InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
+                InjectConstructor component = provider.get(context);
+
+                assertSame(dependency, component.dependency);
             }
 
             @Test
