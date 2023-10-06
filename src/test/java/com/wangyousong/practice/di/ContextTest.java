@@ -129,6 +129,12 @@ class ContextTest {
             }).isPresent());
         }
 
+        @Nested
+        public class WithQualifier {
+            // TODO: binding component with qualifier
+            // TODO: binding component with multi qualifiers
+            // TODO: throw illegal component if illegal qualifier}
+        }
     }
 
     @Nested
@@ -333,6 +339,12 @@ class ContextTest {
 
             Context context = config.getContext();
             assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
+        }
+
+        @Nested
+        public class WithQualifier {
+            // TODO: dependency missing if qualifier not match
+            // TODO: check cylc dependencies with qualifier
         }
     }
 }

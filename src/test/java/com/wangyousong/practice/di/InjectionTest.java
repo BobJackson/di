@@ -159,6 +159,12 @@ class InjectionTest {
 
         }
 
+        @Nested
+        class WithQualifier {
+            // TODO: inject with qualifier
+            // TODO: throw illegal component if illegal qualifier given to injection point
+        }
+
     }
 
     @Nested
@@ -226,6 +232,12 @@ class InjectionTest {
                     new InjectionProvider<>(FinalInjectField.class);
                 });
             }
+        }
+
+        @Nested
+        class WithQualifier {
+            // TODO: inject with qualifier
+            // TODO: throw illegal component if illegal qualifier given to injection point
         }
     }
 
@@ -362,6 +374,12 @@ class InjectionTest {
                     new InjectionProvider<>(InjectMethodWithTypeParameter.class);
                 });
             }
+        }
+
+        @Nested
+        class WithQualifier {
+            // TODO: inject with qualifier
+            // TODO: throw illegal component if illegal qualifier given to injection point
         }
 
     }
