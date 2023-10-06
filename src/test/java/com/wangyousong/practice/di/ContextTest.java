@@ -158,7 +158,21 @@ class ContextTest {
                 assertSame(dependency, chosenOne.dependency);
             }
 
-            // TODO: binding component with multi qualifiers
+            @Test
+            void should_bind_instance_with_multi_qualifiers() {
+                Component instance = new Component() {
+                };
+                config.bind(Component.class, instance, new NamedLiteral("ChosenOne"), new NamedLiteral("Skywalker"));
+
+                Context context = config.getContext();
+                Component chosenOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChosenOne"))).get();
+                Component skywalker = context.get(Context.Ref.of(Component.class, new NamedLiteral("Skywalker"))).get();
+
+                assertSame(instance, chosenOne);
+                assertSame(instance, skywalker);
+            }
+
+
             // TODO: throw illegal component if illegal qualifier}
         }
     }
