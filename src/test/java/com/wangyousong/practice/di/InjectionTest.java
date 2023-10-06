@@ -11,20 +11,22 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class InjectionTest {
     private final Dependency dependency = mock(Dependency.class);
-    private final Context context = mock(Context.class);
     private final Provider<Dependency> dependencyProvider = mock(Provider.class);
     private ParameterizedType dependencyProviderType;
+
+    private final Context context = mock(Context.class);
 
     @BeforeEach
     void setUp() throws NoSuchFieldException {
         dependencyProviderType = (ParameterizedType) InjectionTest.class.getDeclaredField("dependencyProvider").getGenericType();
-        when(context.get(Dependency.class)).thenReturn(Optional.of(dependency));
-        when(context.get(dependencyProviderType)).thenReturn(Optional.of(dependencyProvider));
+        when(context.get(eq(Context.Ref.of(Dependency.class)))).thenReturn(Optional.of(dependency));
+        when(context.get(eq(Context.Ref.of(dependencyProviderType)))).thenReturn(Optional.of(dependencyProvider));
     }
 
     @Nested

@@ -38,7 +38,7 @@ class ContextTest {
             config.bind(Component.class, instance);
             Context context = config.getContext();
 
-            assertSame(instance, context.get(Component.class).get());
+            assertSame(instance, context.get(Context.Ref.of(Component.class)).get());
         }
 
         @ParameterizedTest(name = "supporting {0}")
@@ -49,7 +49,7 @@ class ContextTest {
             config.bind(Dependency.class, dependency);
             config.bind(Component.class, componentType);
 
-            Optional<Component> component = config.getContext().get(Component.class);
+            Optional<Component> component = config.getContext().get(Context.Ref.of(Component.class));
 
             assertTrue(component.isPresent());
             assertSame(dependency, component.get().dependency());
@@ -103,7 +103,7 @@ class ContextTest {
 
         @Test
         void should_return_empty_if_component_not_defined() {
-            Optional<Component> component = config.getContext().get(Component.class);
+            Optional<Component> component = config.getContext().get(Context.Ref.of(Component.class));
             assertTrue(component.isEmpty());
         }
 
@@ -117,7 +117,7 @@ class ContextTest {
             ParameterizedType type = new TypeLiteral<Provider<Component>>() {
             }.getType();
 
-            Provider<Component> provider = (Provider<Component>) context.get(type).get();
+            Provider<Component> provider = (Provider<Component>) context.get(Context.Ref.of(type)).get();
             assertSame(instance, provider.get());
         }
 
@@ -131,7 +131,7 @@ class ContextTest {
             ParameterizedType type = new TypeLiteral<List<Component>>() {
             }.getType();
 
-            assertFalse(context.get(type).isPresent());
+            assertFalse(context.get(Context.Ref.of(type)).isPresent());
         }
 
         static abstract class TypeLiteral<T> {
@@ -207,7 +207,7 @@ class ContextTest {
             config.bind(Component.class, component);
             config.bind(Dependency.class, dependency);
 
-            CyclicDependenciesFoundException e = assertThrows(CyclicDependenciesFoundException.class, () -> config.getContext().get(Component.class));
+            CyclicDependenciesFoundException e = assertThrows(CyclicDependenciesFoundException.class, () -> config.getContext().get(Context.Ref.of(Component.class)));
 
             Set<Class<?>> classes = Set.of(e.getComponents());
 
@@ -271,7 +271,7 @@ class ContextTest {
             config.bind(Dependency.class, dependency);
             config.bind(AnotherDependency.class, anotherDependency);
 
-            CyclicDependenciesFoundException e = assertThrows(CyclicDependenciesFoundException.class, () -> config.getContext().get(Component.class));
+            CyclicDependenciesFoundException e = assertThrows(CyclicDependenciesFoundException.class, () -> config.getContext().get(Context.Ref.of(Component.class)));
 
             Set<Class<?>> classes = Set.of(e.getComponents());
 
@@ -342,7 +342,7 @@ class ContextTest {
             config.bind(Dependency.class, CyclicDependencyProviderConstructor.class);
 
             Context context = config.getContext();
-            assertTrue(context.get(Component.class).isPresent());
+            assertTrue(context.get(Context.Ref.of(Component.class)).isPresent());
         }
     }
 }

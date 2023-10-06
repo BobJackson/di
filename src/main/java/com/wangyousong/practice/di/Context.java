@@ -9,10 +9,6 @@ public interface Context {
 
     <T> Optional<T> get(Ref ref);
 
-    default <T> Optional<T> get(Type type) {
-        return get(Ref.of(type));
-    }
-
     class Ref {
         private Type container;
         private final Class<?> component;
@@ -41,6 +37,19 @@ public interface Context {
 
         public boolean isContainer() {
             return Objects.nonNull(container);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Ref ref = (Ref) o;
+            return Objects.equals(container, ref.container) && component.equals(ref.component);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(container, component);
         }
     }
 }
