@@ -134,32 +134,6 @@ class ContextTest {
         @Nested
         public class WithQualifier {
             @Test
-            void should_bind_instance_with_qualifier() {
-                TestComponent instance = new TestComponent() {
-                };
-                config.bind(TestComponent.class, instance, new NamedLiteral("ChosenOne"));
-
-                Context context = config.getContext();
-                TestComponent chosenOne = context.get(ComponentRef.of(TestComponent.class, new NamedLiteral("ChosenOne"))).get();
-
-                assertSame(instance, chosenOne);
-            }
-
-            @Test
-            void should_bind_component_with_qualifier() {
-                Dependency dependency = new Dependency() {
-                };
-                config.bind(Dependency.class, dependency);
-                config.bind(InjectConstructor.class,
-                        InjectConstructor.class, new NamedLiteral("ChosenOne"));
-
-                Context context = config.getContext();
-                InjectConstructor chosenOne = context.get(ComponentRef.of(InjectConstructor.class, new NamedLiteral("ChosenOne"))).get();
-
-                assertSame(dependency, chosenOne.dependency);
-            }
-
-            @Test
             void should_bind_instance_with_multi_qualifiers() {
                 TestComponent instance = new TestComponent() {
                 };
