@@ -1,5 +1,6 @@
 package com.wangyousong.practice.di;
 
+import com.wangyousong.practice.di.InjectionTest.ConstructorInjection.Injection.InjectConstructor;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import org.junit.jupiter.api.BeforeEach;
@@ -149,11 +150,11 @@ class ContextTest {
                 Dependency dependency = new Dependency() {
                 };
                 config.bind(Dependency.class, dependency);
-                config.bind(InjectionTest.ConstructorInjection.Injection.InjectConstructor.class,
-                        InjectionTest.ConstructorInjection.Injection.InjectConstructor.class, new NamedLiteral("ChosenOne"));
+                config.bind(InjectConstructor.class,
+                        InjectConstructor.class, new NamedLiteral("ChosenOne"));
 
                 Context context = config.getContext();
-                InjectionTest.ConstructorInjection.Injection.InjectConstructor chosenOne = context.get(Context.Ref.of(InjectionTest.ConstructorInjection.Injection.InjectConstructor.class, new NamedLiteral("ChosenOne"))).get();
+                InjectConstructor chosenOne = context.get(Context.Ref.of(InjectConstructor.class, new NamedLiteral("ChosenOne"))).get();
 
                 assertSame(dependency, chosenOne.dependency);
             }
@@ -172,6 +173,22 @@ class ContextTest {
                 assertSame(instance, skywalker);
             }
 
+            @Test
+            void should_bind_component_with_multi_qualifiers() {
+                Dependency dependency = new Dependency() {
+                };
+                config.bind(Dependency.class, dependency);
+                config.bind(InjectConstructor.class,
+                        InjectConstructor.class,
+                        new NamedLiteral("ChosenOne"), new NamedLiteral("Skywalker"));
+
+                Context context = config.getContext();
+                InjectConstructor chosenOne = context.get(Context.Ref.of(InjectConstructor.class, new NamedLiteral("ChosenOne"))).get();
+                InjectConstructor skywalker = context.get(Context.Ref.of(InjectConstructor.class, new NamedLiteral("Skywalker"))).get();
+
+                assertSame(dependency, chosenOne.dependency);
+                assertSame(dependency, skywalker.dependency);
+            }
 
             // TODO: throw illegal component if illegal qualifier}
         }
