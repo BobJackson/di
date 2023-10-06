@@ -125,7 +125,7 @@ class ContextTest {
             config.bind(Component.class, instance);
             Context context = config.getContext();
 
-            assertFalse(context.get(new Context.Ref<Provider<List<Component>>>() {
+            assertFalse(context.get(new Context.Ref<List<Component>>() {
             }).isPresent());
         }
 
