@@ -3,7 +3,10 @@ package com.wangyousong.practice.di;
 import com.wangyousong.practice.di.InjectionTest.ConstructorInjection.Injection.InjectConstructor;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -184,7 +187,8 @@ class ContextTest {
 
             DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
 
-            assertEquals(Dependency.class, e.getDependency());
+            assertEquals(Dependency.class, e.getDependency().type());
+            assertEquals(TestComponent.class, e.getComponent().type());
         }
 
         public static Stream<Arguments> should_throw_exception_if_dependency_not_found() {
@@ -381,15 +385,22 @@ class ContextTest {
 
         @Nested
         public class WithQualifier {
-            // TODO: dependency missing if qualifier not match
             @Test
-            @Disabled
             void should_throw_exception_if_dependency_with_qualifier_not_found() {
                 config.bind(Dependency.class, new Dependency() {
                 });
-                config.bind(InjectConstructor.class, InjectConstructor.class);
+                config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
 
-                assertThrows(DependencyNotFoundException.class, () -> config.getContext());
+                DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
+
+                assertEquals(new Component(InjectConstructor.class, new NamedLiteral("Owner")), e.getComponent());
+                assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), e.getDependency());
+            }
+
+            static class InjectConstructor {
+                @Inject
+                public InjectConstructor(@Skywalker Dependency dependency) {
+                }
             }
 
             // TODO: check cyclic dependencies with qualifier
@@ -429,6 +440,11 @@ record SkywalkerLiteral() implements Skywalker {
     @Override
     public Class<? extends Annotation> annotationType() {
         return Skywalker.class;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Skywalker;
     }
 }
 

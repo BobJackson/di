@@ -1,19 +1,19 @@
 package com.wangyousong.practice.di;
 
-public class DependencyNotFoundException extends RuntimeException{
-    private final Class<?> component;
-    private final Class<?> dependency;
+public class DependencyNotFoundException extends RuntimeException {
+    private final Component component;
+    private final Component dependency;
 
-    public DependencyNotFoundException(Class<?> component, Class<?> dependency) {
+    public DependencyNotFoundException(Component component, Component dependency) {
         this.component = component;
         this.dependency = dependency;
     }
 
-    public Class<?> getComponent() {
+    public Component getComponent() {
         return component;
     }
 
-    public Class<?> getDependency() {
+    public Component getDependency() {
         return dependency;
     }
 }
