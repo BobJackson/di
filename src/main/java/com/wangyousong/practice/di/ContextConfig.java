@@ -23,20 +23,20 @@ public class ContextConfig {
         return new Context() {
             @SuppressWarnings("unchecked")
             @Override
-            public <T> Optional<T> get(Ref ref) {
+            public Optional get(Ref ref) {
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
-                    return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
-                            .map(provider -> (Provider<T>) () -> (T) provider.get(this));
+                    return Optional.ofNullable(providers.get(ref.getComponent()))
+                            .map(provider -> (Provider<?>) () -> provider.get(this));
                 }
-                return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
+                return Optional.ofNullable(providers.get(ref.getComponent()))
                         .map(provider -> (Object) provider.get(this));
             }
         };
     }
 
     private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
-        for (Context.Ref dependency : providers.get(component).getDependencies()) {
+        for (Context.Ref<?> dependency : providers.get(component).getDependencies()) {
             if (!providers.containsKey(dependency.getComponent()))
                 throw new DependencyNotFoundException(component, dependency.getComponent());
             if (!dependency.isContainer()) {
