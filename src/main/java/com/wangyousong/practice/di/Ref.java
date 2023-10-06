@@ -17,7 +17,7 @@ class Ref {
         this.component = component;
     }
 
-    public static <T> Ref of(Type type) {
+    public static Ref of(Type type) {
         if (type instanceof ParameterizedType container) return new Ref(container);
         return new Ref((Class<?>) type);
     }
