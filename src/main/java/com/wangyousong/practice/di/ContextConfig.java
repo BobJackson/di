@@ -22,14 +22,9 @@ public class ContextConfig {
         providers.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
 
         return new Context() {
-
-            @Override
-            public <T> Optional<T> get(Type type) {
-                return get(Ref.of(type));
-            }
-
             @SuppressWarnings("unchecked")
-            private <T> Optional<T> get(Ref ref) {
+            @Override
+            public <T> Optional<T> get(Ref ref) {
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
                     return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
@@ -38,13 +33,12 @@ public class ContextConfig {
                 return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
                         .map(provider -> (Object) provider.get(this));
             }
-
         };
     }
 
     private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
         for (Type dependency : providers.get(component).getDependencies()) {
-            Ref ref = Ref.of(dependency);
+            Context.Ref ref = Context.Ref.of(dependency);
             if (!providers.containsKey(ref.getComponent()))
                 throw new DependencyNotFoundException(component, ref.getComponent());
             if (!ref.isContainer()) {
