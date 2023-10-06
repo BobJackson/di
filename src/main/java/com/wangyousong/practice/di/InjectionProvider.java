@@ -5,10 +5,7 @@ import jakarta.inject.Qualifier;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -16,15 +13,18 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
-    private final Constructor<T> injectConstructor;
     private final List<Field> injectFields;
     private final List<Method> injectMethods;
     private final List<ComponentRef> dependencies;
+    private final Injectable<Constructor<T>> injectConstructor;
 
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
-        this.injectConstructor = getInjectConstructor(component);
+        Constructor<T> constructor = getInjectConstructor(component);
+        ComponentRef<?>[] required = stream(constructor.getParameters()).map(InjectionProvider::toComponentRef).toArray(ComponentRef<?>[]::new);
+        this.injectConstructor = new Injectable<>(constructor, required);
+
         this.injectFields = getInjectFields(component);
         this.injectMethods = getInjectMethods(component);
 
@@ -39,7 +39,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     @Override
     public T get(Context context) {
         try {
-            T instance = injectConstructor.newInstance(toDependencies(context, injectConstructor));
+            T instance = injectConstructor.element.newInstance(injectConstructor.toDependencies(context));
             for (Field field : injectFields) {
                 field.set(instance, toDependency(context, field));
             }
@@ -55,10 +55,16 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     @Override
     public List<ComponentRef> getDependencies() {
         return concat(
-                concat(stream(injectConstructor.getParameters()).map(InjectionProvider::toComponentRef),
+                concat(stream(injectConstructor.required()),
                         injectFields.stream().map(InjectionProvider::toComponentRef)),
                 injectMethods.stream().flatMap(m -> stream(m.getParameters()).map(InjectionProvider::toComponentRef))
         ).toList();
+    }
+
+    record Injectable<Element extends AccessibleObject>(Element element, ComponentRef<?>[] required) {
+        Object[] toDependencies(Context context) {
+            return stream(required).map(context::get).map(Optional::get).toArray();
+        }
     }
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
