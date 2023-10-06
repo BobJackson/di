@@ -14,23 +14,22 @@ import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     private final List<Field> injectFields;
-    private final List<Method> injectMethods;
     private final List<ComponentRef> dependencies;
     private final Injectable<Constructor<T>> injectConstructor;
-    private List<Injectable<Method>> injectableMethods;
+    private final List<Injectable<Method>> injectableMethods;
 
 
     public InjectionProvider(Class<T> component) {
         if (Modifier.isAbstract(component.getModifiers())) throw new IllegalComponentException();
 
         this.injectConstructor = getInjectable(getInjectConstructor(component));
+        this.injectableMethods = getInjectMethods(component).stream().map(this::getInjectable).toList();
 
         this.injectFields = getInjectFields(component);
-        this.injectMethods = getInjectMethods(component);
 
         if (injectFields.stream().anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
-        if (injectMethods.stream().anyMatch(m -> m.getTypeParameters().length != 0))
+        if (injectableMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
 
         this.dependencies = getDependencies();
@@ -44,12 +43,9 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     public T get(Context context) {
         try {
             T instance = injectConstructor.element.newInstance(injectConstructor.toDependencies(context));
-            for (Field field : injectFields) {
-                field.set(instance, toDependency(context, field));
-            }
-            for (Method method : injectMethods) {
-                method.invoke(instance, toDependencies(context, method));
-            }
+            for (Field field : injectFields) field.set(instance, toDependency(context, field));
+            for (Injectable<Method> method : injectableMethods)
+                method.element().invoke(instance, method.toDependencies(context));
             return instance;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -61,7 +57,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
         return concat(
                 concat(stream(injectConstructor.required()),
                         injectFields.stream().map(InjectionProvider::toComponentRef)),
-                injectMethods.stream().flatMap(m -> stream(m.getParameters()).map(InjectionProvider::toComponentRef))
+                injectableMethods.stream().flatMap(m -> stream(m.required()))
         ).toList();
     }
 
