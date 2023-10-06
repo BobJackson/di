@@ -162,8 +162,6 @@ class InjectionTest {
 
         @Nested
         class WithQualifier {
-            // TODO: inject with qualifier
-
             static class InjectConstructor {
                 @Inject
                 public InjectConstructor(@Named("ChosenOne") Dependency dependency) {
