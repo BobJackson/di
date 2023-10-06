@@ -19,6 +19,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     private final Constructor<T> injectConstructor;
     private final List<Field> injectFields;
     private final List<Method> injectMethods;
+    private final List<ComponentRef> dependencies;
 
 
     public InjectionProvider(Class<T> component) {
@@ -31,6 +32,8 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
             throw new IllegalComponentException();
         if (injectMethods.stream().anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
+
+        this.dependencies = getDependencies();
     }
 
     @Override
@@ -53,7 +56,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     public List<ComponentRef> getDependencies() {
         return concat(
                 concat(stream(injectConstructor.getParameters()).map(this::toComponentRef),
-                        injectFields.stream().map(f -> toComponentRef(f))),
+                        injectFields.stream().map(InjectionProvider::toComponentRef)),
                 injectMethods.stream().flatMap(m -> stream(m.getParameters()).map(this::toComponentRef))
         ).toList();
     }
@@ -75,10 +78,11 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     }
 
     private static Annotation getQualifier(Parameter parameter) {
-        return stream(parameter.getAnnotations())
+        List<Annotation> qualifiers = stream(parameter.getAnnotations())
                 .filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class))
-                .findFirst()
-                .orElse(null);
+                .toList();
+        if (qualifiers.size() > 1) throw new IllegalComponentException();
+        return qualifiers.stream().findFirst().orElse(null);
     }
 
     private static <T> List<Method> getInjectMethods(Class<T> component) {
