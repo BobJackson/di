@@ -13,7 +13,6 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Stream.concat;
 
 class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
-    private final List<ComponentRef<?>> dependencies;
     private final Injectable<Constructor<T>> injectConstructor;
     private final List<Injectable<Method>> injectMethods;
     private final List<Injectable<Field>> injectFields;
@@ -30,8 +29,6 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
             throw new IllegalComponentException();
         if (injectMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
-
-        this.dependencies = getDependencies();
     }
 
     @Override
