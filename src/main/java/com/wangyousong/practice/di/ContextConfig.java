@@ -8,11 +8,10 @@ import java.util.*;
 import static java.util.List.of;
 
 public class ContextConfig {
-    private final Map<Class<?>, ComponentProvider<?>> providers = new HashMap<>();
     private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
 
     public <T> void bind(Class<T> type, T instance) {
-        providers.put(type, (ComponentProvider<T>) context -> instance);
+        components.put(new Component(type, null), (ComponentProvider<T>) context -> instance);
     }
 
     public <T> void bind(Class<T> type, T instance, Annotation... qualifiers) {
@@ -25,7 +24,7 @@ public class ContextConfig {
     }
 
     public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation) {
-        providers.put(type, new InjectionProvider<>(implementation));
+        components.put(new Component(type, null), new InjectionProvider<>(implementation));
     }
 
     public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation, Annotation... qualifiers) {
@@ -34,35 +33,36 @@ public class ContextConfig {
     }
 
     public Context getContext() {
-        providers.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
+        components.keySet().forEach(component -> checkDependencies(component, new Stack<>()));
+
 
         return new Context() {
             @SuppressWarnings("unchecked")
             @Override
             public <ComponentType> Optional<ComponentType> get(Ref<ComponentType> ref) {
-                if (ref.getQualifier() != null) {
-                    return Optional.ofNullable(components.get(new Component(ref.getComponent(), ref.getQualifier())))
-                            .map(provider -> (ComponentType) provider.get(this));
-                }
                 if (ref.isContainer()) {
                     if (ref.getContainer() != Provider.class) return Optional.empty();
-                    return (Optional<ComponentType>) Optional.ofNullable(providers.get(ref.getComponent()))
+                    return (Optional<ComponentType>) Optional.ofNullable(getProvider(ref))
                             .map(provider -> (Provider<Object>) () -> provider.get(this));
                 }
-                return Optional.ofNullable(providers.get(ref.getComponent()))
+                return Optional.ofNullable(getProvider(ref))
                         .map(provider -> (ComponentType) provider.get(this));
             }
         };
     }
 
-    private void checkDependencies(Class<?> component, Stack<Class<?>> visiting) {
-        for (Context.Ref<?> dependency : providers.get(component).getDependencies()) {
-            if (!providers.containsKey(dependency.getComponent()))
-                throw new DependencyNotFoundException(component, dependency.getComponent());
+    private <ComponentType> ComponentProvider<?> getProvider(Context.Ref<ComponentType> ref) {
+        return components.get(new Component(ref.getComponent(), ref.getQualifier()));
+    }
+
+    private void checkDependencies(Component component, Stack<Class<?>> visiting) {
+        for (Context.Ref<?> dependency : components.get(component).getDependencies()) {
+            if (!components.containsKey(new Component(dependency.getComponent(), dependency.getQualifier())))
+                throw new DependencyNotFoundException(component.type(), dependency.getComponent());
             if (!dependency.isContainer()) {
                 if (visiting.contains(dependency.getComponent())) throw new CyclicDependenciesFoundException(visiting);
                 visiting.push(dependency.getComponent());
-                checkDependencies(dependency.getComponent(), visiting);
+                checkDependencies(new Component(dependency.getComponent(), dependency.getQualifier()), visiting);
                 visiting.pop();
             }
         }
