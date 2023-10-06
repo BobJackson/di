@@ -21,10 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class ContextTest {
 
     ContextConfig config;
+    Dependency dependency;
 
     @BeforeEach
     void setUp() {
         config = new ContextConfig();
+        dependency = new Dependency() {
+        };
     }
 
     @Nested
@@ -43,8 +46,6 @@ class ContextTest {
         @ParameterizedTest(name = "supporting {0}")
         @MethodSource
         void should_bind_type_to_an_injectable_component(Class<? extends TestComponent> componentType) {
-            Dependency dependency = new Dependency() {
-            };
             config.bind(Dependency.class, dependency);
             config.bind(TestComponent.class, componentType);
 
@@ -147,8 +148,6 @@ class ContextTest {
 
             @Test
             void should_bind_component_with_multi_qualifiers() {
-                Dependency dependency = new Dependency() {
-                };
                 config.bind(Dependency.class, dependency);
                 config.bind(InjectConstructor.class,
                         InjectConstructor.class,
@@ -387,8 +386,7 @@ class ContextTest {
         public class WithQualifier {
             @Test
             void should_throw_exception_if_dependency_with_qualifier_not_found() {
-                config.bind(Dependency.class, new Dependency() {
-                });
+                config.bind(Dependency.class, dependency);
                 config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
 
                 DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
@@ -420,9 +418,7 @@ class ContextTest {
 
             @Test
             void should_not_throw_exception_if_component_with_same_type_tagged_with_different_qualifier() {
-                Dependency instance = new Dependency() {
-                };
-                config.bind(Dependency.class, instance, new NamedLiteral("ChosenOne"));
+                config.bind(Dependency.class, dependency, new NamedLiteral("ChosenOne"));
                 config.bind(Dependency.class, SkywalkerDependency.class, new SkywalkerLiteral());
                 config.bind(Dependency.class, NotCyclicDependency.class);
 
