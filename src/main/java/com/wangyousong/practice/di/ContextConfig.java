@@ -1,10 +1,12 @@
 package com.wangyousong.practice.di;
 
 import jakarta.inject.Provider;
+import jakarta.inject.Qualifier;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
 
+import static java.util.Arrays.stream;
 import static java.util.List.of;
 
 public class ContextConfig {
@@ -15,6 +17,8 @@ public class ContextConfig {
     }
 
     public <T> void bind(Class<T> type, T instance, Annotation... qualifiers) {
+        if (stream(qualifiers).anyMatch(q -> !q.annotationType().isAnnotationPresent(Qualifier.class)))
+            throw new IllegalComponentException();
         for (Annotation qualifier : qualifiers)
             components.put(new Component(type, qualifier), context -> instance);
     }
@@ -24,6 +28,8 @@ public class ContextConfig {
     }
 
     public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation, Annotation... qualifiers) {
+        if (stream(qualifiers).anyMatch(q -> !q.annotationType().isAnnotationPresent(Qualifier.class)))
+            throw new IllegalComponentException();
         for (Annotation qualifier : qualifiers)
             components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
     }
