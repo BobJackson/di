@@ -16,7 +16,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     private final List<ComponentRef<?>> dependencies;
     private final Injectable<Constructor<T>> injectConstructor;
     private final List<Injectable<Method>> injectMethods;
-    private final List<Injectable<Field>> injectableFields;
+    private final List<Injectable<Field>> injectFields;
 
 
     public InjectionProvider(Class<T> component) {
@@ -24,9 +24,9 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
 
         this.injectConstructor = Injectable.of(getInjectConstructor(component));
         this.injectMethods = getInjectMethods(component).stream().map(Injectable::of).toList();
-        this.injectableFields = getInjectFields(component).stream().map(Injectable::of).toList();
+        this.injectFields = getInjectFields(component).stream().map(Injectable::of).toList();
 
-        if (injectableFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
+        if (injectFields.stream().map(Injectable::element).anyMatch(f -> Modifier.isFinal(f.getModifiers())))
             throw new IllegalComponentException();
         if (injectMethods.stream().map(Injectable::element).anyMatch(m -> m.getTypeParameters().length != 0))
             throw new IllegalComponentException();
@@ -38,7 +38,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     public T get(Context context) {
         try {
             T instance = injectConstructor.element.newInstance(injectConstructor.toDependencies(context));
-            for (Injectable<Field> field : injectableFields)
+            for (Injectable<Field> field : injectFields)
                 field.element().set(instance, field.toDependencies(context)[0]);
             for (Injectable<Method> method : injectMethods)
                 method.element().invoke(instance, method.toDependencies(context));
@@ -52,7 +52,7 @@ class InjectionProvider<T> implements ContextConfig.ComponentProvider<T> {
     public List<ComponentRef<?>> getDependencies() {
         return concat(
                 concat(stream(injectConstructor.required()),
-                        injectableFields.stream().flatMap(f -> stream(f.required()))),
+                        injectFields.stream().flatMap(f -> stream(f.required()))),
                 injectMethods.stream().flatMap(m -> stream(m.required()))
         ).toList();
     }
