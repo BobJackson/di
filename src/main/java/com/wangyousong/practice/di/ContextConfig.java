@@ -23,16 +23,26 @@ public class ContextConfig {
         providers.keySet().forEach(component -> checkDependency(component, new Stack<>()));
 
         return new Context() {
-            @SuppressWarnings("unchecked")
+
             @Override
             public <T> Optional<T> get(Type type) {
-                if (isContainerType(type)) return getContainer((ParameterizedType) type);
-                return (Optional<T>) getComponent((Class<?>) type);
+                return get(Ref.of(type));
+            }
+
+            @SuppressWarnings("unchecked")
+            private <T> Optional<T> get(Ref ref) {
+                if (ref.isContainer()) {
+                    if (ref.getContainer() != Provider.class) return Optional.empty();
+                    return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
+                            .map(provider -> (Provider<T>) () -> (T) provider.get(this));
+                }
+                return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
+                        .map(provider -> (Object) provider.get(this));
             }
 
             @SuppressWarnings("unchecked")
             private <T> Optional<T> getContainer(ParameterizedType type) {
-                Ref<T> ref = Ref.of(type);
+                Ref ref = Ref.of(type);
                 if (ref.getContainer() != Provider.class) return Optional.empty();
                 return (Optional<T>) Optional.ofNullable(providers.get(ref.getComponent()))
                         .map(provider -> (Provider<T>) () -> (T) provider.get(this));
@@ -40,13 +50,13 @@ public class ContextConfig {
 
             @SuppressWarnings("unchecked")
             private <T> Optional<T> getComponent(Class<T> type) {
-                Ref<T> ref = Ref.of(type);
+                Ref ref = Ref.of(type);
                 return Optional.ofNullable(providers.get(ref.getComponent())).map(provider -> (T) provider.get(this));
             }
         };
     }
 
-    static class Ref<T> {
+    static class Ref {
         private Type container;
         private Class<?> component;
 
@@ -59,9 +69,9 @@ public class ContextConfig {
             this.component = component;
         }
 
-        static <T> Ref<T> of(Type type) {
-            if (type instanceof ParameterizedType container) return new Ref<>(container);
-            return new Ref<>((Class<?>) type);
+        static <T> Ref of(Type type) {
+            if (type instanceof ParameterizedType container) return new Ref(container);
+            return new Ref((Class<?>) type);
         }
 
         public Type getContainer() {
@@ -70,6 +80,10 @@ public class ContextConfig {
 
         public Class<?> getComponent() {
             return component;
+        }
+
+        public boolean isContainer() {
+            return Objects.nonNull(container);
         }
     }
 
