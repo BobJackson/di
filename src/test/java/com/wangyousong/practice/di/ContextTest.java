@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -131,7 +132,19 @@ class ContextTest {
 
         @Nested
         public class WithQualifier {
-            // TODO: binding component with qualifier
+            @Test
+            void should_bind_instance_with_qualifier() {
+                Component instance = new Component() {
+                };
+                config.bind(Component.class, instance, new NamedLiteral("ChosenOne"));
+
+                Context context = config.getContext();
+                Component chosenOne = context.get(Context.Ref.of(Component.class, new NamedLiteral("ChosenOne"))).get();
+
+                assertSame(instance, chosenOne);
+            }
+
+
             // TODO: binding component with multi qualifiers
             // TODO: throw illegal component if illegal qualifier}
         }
@@ -346,5 +359,13 @@ class ContextTest {
             // TODO: dependency missing if qualifier not match
             // TODO: check cylc dependencies with qualifier
         }
+    }
+}
+
+record NamedLiteral(String value) implements jakarta.inject.Named {
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return jakarta.inject.Named.class;
     }
 }
