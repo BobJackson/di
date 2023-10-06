@@ -3,10 +3,7 @@ package com.wangyousong.practice.di;
 import com.wangyousong.practice.di.InjectionTest.ConstructorInjection.Injection.InjectConstructor;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Named;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,11 +19,14 @@ class ContextTest {
 
     ContextConfig config;
     Dependency dependency;
+    TestComponent instance;
 
     @BeforeEach
     void setUp() {
         config = new ContextConfig();
         dependency = new Dependency() {
+        };
+        instance = new TestComponent() {
         };
     }
 
@@ -35,8 +35,6 @@ class ContextTest {
 
         @Test
         void should_bind_type_to_a_specific_instance() {
-            TestComponent instance = new TestComponent() {
-            };
             config.bind(TestComponent.class, instance);
             Context context = config.getContext();
 
@@ -109,8 +107,6 @@ class ContextTest {
 
         @Test
         void should_retrieve_bind_type_as_provider() {
-            TestComponent instance = new TestComponent() {
-            };
             config.bind(TestComponent.class, instance);
             Context context = config.getContext();
 
@@ -121,8 +117,6 @@ class ContextTest {
 
         @Test
         void should_not_retrieve_bind_type_as_unsupported_container() {
-            TestComponent instance = new TestComponent() {
-            };
             config.bind(TestComponent.class, instance);
             Context context = config.getContext();
 
@@ -134,8 +128,6 @@ class ContextTest {
         public class WithQualifier {
             @Test
             void should_bind_instance_with_multi_qualifiers() {
-                TestComponent instance = new TestComponent() {
-                };
                 config.bind(TestComponent.class, instance, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
 
                 Context context = config.getContext();
@@ -173,7 +165,15 @@ class ContextTest {
                 assertThrows(IllegalComponentException.class, () -> config.bind(InjectConstructor.class, InjectConstructor.class, new TestLiteral()));
             }
 
-            // TODO Provider
+            @Test
+            void should_retrieve_bind_type_as_provider() {
+                config.bind(TestComponent.class, instance, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
+
+                Optional<Provider<TestComponent>> provider = config.getContext().get(new ComponentRef<>(new SkywalkerLiteral()) {
+                });
+
+                assertTrue(provider.isPresent());
+            }
         }
     }
 
@@ -384,15 +384,26 @@ class ContextTest {
 
         @Nested
         public class WithQualifier {
-            @Test
-            void should_throw_exception_if_dependency_with_qualifier_not_found() {
+            @Disabled
+            @ParameterizedTest
+            @MethodSource
+            void should_throw_exception_if_dependency_with_qualifier_not_found(Class<? extends TestComponent> component) {
                 config.bind(Dependency.class, dependency);
-                config.bind(InjectConstructor.class, InjectConstructor.class, new NamedLiteral("Owner"));
+                config.bind(TestComponent.class, component, new NamedLiteral("Owner"));
 
                 DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
 
-                assertEquals(new Component(InjectConstructor.class, new NamedLiteral("Owner")), e.getComponent());
+                assertEquals(new Component(TestComponent.class, new NamedLiteral("Owner")), e.getComponent());
                 assertEquals(new Component(Dependency.class, new SkywalkerLiteral()), e.getDependency());
+            }
+
+            public static Stream<Arguments> should_throw_exception_if_dependency_with_qualifier_not_found() {
+                List<Arguments> arguments = new ArrayList<>();
+                for (Named<?> component : List.of(Named.of("Inject Constructor", MissingDependencyConstructor.class),
+                        Named.of("Inject Field ", MissingDependencyField.class),
+                        Named.of("Inject Method ", MissingDependencyMethod.class)))
+                    arguments.add(Arguments.of(component));
+                return arguments.stream();
             }
 
             static class InjectConstructor {

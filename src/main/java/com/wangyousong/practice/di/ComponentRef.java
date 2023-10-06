@@ -18,6 +18,11 @@ public class ComponentRef<ComponentType> {
         init(type, null);
     }
 
+    public ComponentRef(Annotation qualifier) {
+        Type type = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        init(type, qualifier);
+    }
+
     public static <ComponentType> ComponentRef<ComponentType> of(Class<ComponentType> component) {
         return new ComponentRef<>(component, null);
     }
