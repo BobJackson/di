@@ -403,7 +403,31 @@ class ContextTest {
                 }
             }
 
-            // TODO: check cyclic dependencies with qualifier
+            // A -> @Skywalker A -> @Named A
+            static class SkywalkerDependency implements Dependency {
+                @Inject
+                public SkywalkerDependency(@jakarta.inject.Named("ChosenOne") Dependency dependency) {
+
+                }
+            }
+
+            static class NotCyclicDependency implements Dependency {
+                @Inject
+                public NotCyclicDependency(@Skywalker Dependency dependency) {
+
+                }
+            }
+
+            @Test
+            void should_not_throw_exception_if_component_with_same_type_tagged_with_different_qualifier() {
+                Dependency instance = new Dependency() {
+                };
+                config.bind(Dependency.class, instance, new NamedLiteral("ChosenOne"));
+                config.bind(Dependency.class, SkywalkerDependency.class, new SkywalkerLiteral());
+                config.bind(Dependency.class, NotCyclicDependency.class);
+
+                assertDoesNotThrow(() -> config.getContext());
+            }
         }
     }
 }
@@ -425,7 +449,7 @@ record NamedLiteral(String value) implements jakarta.inject.Named {
 
     @Override
     public int hashCode() {
-        return Objects.hash(value);
+        return "value".hashCode() * 127 ^ value.hashCode();
     }
 }
 
