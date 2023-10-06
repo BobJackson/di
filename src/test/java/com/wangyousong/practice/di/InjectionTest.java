@@ -309,7 +309,17 @@ class InjectionTest {
                         provider.getDependencies().toArray(ComponentRef[]::new));
             }
 
-            // TODO: throw illegal component if illegal qualifier given to injection point
+            static class MultiQualifiersInjectField {
+                @Inject
+                @Named("ChosenOne")
+                @Skywalker
+                Dependency dependency;
+            }
+
+            @Test
+            void should_throw_exception_if_multi_qualifiers_given_to_inject_field() {
+                assertThrows(IllegalComponentException.class, () -> new InjectionProvider<>(MultiQualifiersInjectField.class));
+            }
         }
     }
 
