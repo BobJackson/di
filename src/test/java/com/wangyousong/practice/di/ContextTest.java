@@ -4,7 +4,10 @@ import com.wangyousong.practice.di.InjectionTest.ConstructorInjection.Injection.
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -209,13 +212,11 @@ class ContextTest {
                 assertSame(context.get(ComponentRef.of(NotSingleton.class)).get(), context.get(ComponentRef.of(NotSingleton.class)).get());
             }
 
-            // TODO: get scope from component class
             @Singleton
             static class SingletonAnnotated {
 
             }
 
-            @Disabled
             @Test
             void should_retrieve_scope_annotation_from_component() {
                 config.bind(SingletonAnnotated.class, SingletonAnnotated.class);
