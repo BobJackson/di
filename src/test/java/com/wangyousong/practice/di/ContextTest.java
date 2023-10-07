@@ -225,6 +225,14 @@ class ContextTest {
 
                     assertNotSame(context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get(), context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get());
                 }
+
+                @Test
+                void should_bind_component_as_singleton_scope() {
+                    config.bind(NotSingleton.class, NotSingleton.class, new SingletonLiteral(), new Utils.SkywalkerLiteral());
+                    Context context = config.getContext();
+
+                    assertSame(context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get(), context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get());
+                }
             }
         }
 
