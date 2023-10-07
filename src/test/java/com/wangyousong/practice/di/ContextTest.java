@@ -189,12 +189,34 @@ class ContextTest {
 
         @Nested
         public class WithScope {
-            // TODO: default scope should bot be singleton
+
+            static class NotSingleton {
+
+            }
+
+            @Test
+            void should_not_be_singleton_scope_by_default() {
+                config.bind(NotSingleton.class, NotSingleton.class);
+                Context context = config.getContext();
+
+                assertNotSame(context.get(ComponentRef.of(NotSingleton.class)).get(), context.get(ComponentRef.of(NotSingleton.class)).get());
+            }
             // TODO: bind component as singleton scoped
             // TODO: bind component with qualifiers as singleton scoped
             // TODO: get scope from component class
             // TODO: get scope from component with qualifiers
             // TODO: bind component with customized scope annotation
+
+            @Nested
+            public class WithQualifier {
+                @Test
+                void should_not_be_singleton_scope_by_default() {
+                    config.bind(NotSingleton.class, NotSingleton.class, new SkywalkerLiteral());
+                    Context context = config.getContext();
+
+                    assertNotSame(context.get(ComponentRef.of(NotSingleton.class, new SkywalkerLiteral())).get(), context.get(ComponentRef.of(NotSingleton.class, new SkywalkerLiteral())).get());
+                }
+            }
         }
 
     }
