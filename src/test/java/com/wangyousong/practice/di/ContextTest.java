@@ -359,8 +359,6 @@ class ContextTest {
             return arguments.stream();
         }
 
-        // TODO: cyclic dependencies with scope
-
         static class CyclicComponentInjectConstructor implements TestComponent {
             @Inject
             public CyclicComponentInjectConstructor(Dependency dependency) {
