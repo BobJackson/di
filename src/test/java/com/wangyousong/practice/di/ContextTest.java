@@ -242,7 +242,17 @@ class ContextTest {
             void should_throw_exception_if_multi_scope_provided() {
                 assertThrows(IllegalComponentException.class, () -> config.bind(NotSingleton.class, NotSingleton.class, new SingletonLiteral(), new PooledLiteral()));
             }
-            // TODO: multi scope annotated
+
+            @Singleton
+            @Pooled
+            static class MultiScopeAnnotated {
+
+            }
+
+            @Test
+            void should_throw_exception_if_multi_scope_annotated() {
+                assertThrows(IllegalComponentException.class, () -> config.bind(MultiScopeAnnotated.class, MultiScopeAnnotated.class));
+            }
             // TODO: undefined scope
 
             @Nested
