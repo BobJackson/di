@@ -243,6 +243,14 @@ class ContextTest {
 
                     assertSame(context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get(), context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get());
                 }
+
+                @Test
+                void should_retrieve_scope_annotation_from_component() {
+                    config.bind(SingletonAnnotated.class, SingletonAnnotated.class, new Utils.SkywalkerLiteral());
+                    Context context = config.getContext();
+
+                    assertSame(context.get(ComponentRef.of(SingletonAnnotated.class, new Utils.SkywalkerLiteral())).get(), context.get(ComponentRef.of(SingletonAnnotated.class, new Utils.SkywalkerLiteral())).get());
+                }
             }
         }
 

@@ -32,8 +32,11 @@ public class ContextConfig {
         if (stream(annotations).map(Annotation::annotationType)
                 .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class) && !t.isAnnotationPresent(Scope.class)))
             throw new IllegalComponentException();
+        Optional<Annotation> scopeFromType = stream(type.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
+
         List<Annotation> qualifiers = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
-        Optional<Annotation> scope = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
+        Optional<Annotation> scope = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst()
+                .or(() -> scopeFromType);
         ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
         ComponentProvider<Implementation> provider = scope.map(s -> (ComponentProvider<Implementation>) new SingletonProvider<>(injectionProvider)).orElse(injectionProvider);
         if (qualifiers.isEmpty()) components.put(new Component(type, null), provider);
