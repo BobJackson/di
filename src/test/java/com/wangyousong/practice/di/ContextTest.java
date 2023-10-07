@@ -276,11 +276,11 @@ class ContextTest {
                     Arguments.of(Named.of("Method Injection", MissingDependencyMethod.class)),
                     Arguments.of(Named.of("Provider in Injection Constructor", MissingDependencyProviderConstructor.class)),
                     Arguments.of(Named.of("Provider in Injection Field", MissingDependencyProviderField.class)),
-                    Arguments.of(Named.of("Provider in Injection Method", MissingDependencyProviderMethod.class))
+                    Arguments.of(Named.of("Provider in Injection Method", MissingDependencyProviderMethod.class)),
+                    Arguments.of(Named.of("Scoped", MissingDependencyScoped.class)),
+                    Arguments.of(Named.of("Scoped Provider", MissingDependencyProviderScoped.class))
             );
         }
-
-        // TODO: missing dependencies with scope
 
         static class MissingDependencyConstructor implements TestComponent {
             @Inject
@@ -317,6 +317,19 @@ class ContextTest {
 
             }
         }
+
+        @Singleton
+        static class MissingDependencyScoped implements TestComponent {
+            @Inject
+            Dependency dependency;
+        }
+
+        @Singleton
+        static class MissingDependencyProviderScoped implements TestComponent {
+            @Inject
+            Provider<Dependency> dependency;
+        }
+
 
         @ParameterizedTest(name = "cyclic dependency between {0} and {1}")
         @MethodSource

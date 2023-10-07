@@ -57,6 +57,11 @@ public class ContextConfig {
             if (singleton == null) singleton = provider.get(context);
             return singleton;
         }
+
+        @Override
+        public List<ComponentRef<?>> getDependencies() {
+            return provider.getDependencies();
+        }
     }
 
     public Context getContext() {
