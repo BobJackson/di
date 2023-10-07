@@ -1,9 +1,15 @@
 package com.wangyousong.practice.di;
 
+import jakarta.inject.Qualifier;
+import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -31,9 +37,9 @@ record Utils() {
         }
     }
 
-    @java.lang.annotation.Documented
-    @java.lang.annotation.Retention(RUNTIME)
-    @jakarta.inject.Qualifier
+    @Documented
+    @Retention(RUNTIME)
+    @Qualifier
     @interface Skywalker {
     }
 
@@ -80,4 +86,41 @@ record SingletonLiteral() implements Singleton {
         return Singleton.class;
     }
 }
+
+@Scope
+@Documented
+@Retention(RUNTIME)
+@interface Pooled {
+}
+
+record PooledLiteral() implements Pooled {
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return Pooled.class;
+    }
+}
+
+class PooledProvider<T> implements ContextConfig.ComponentProvider<T> {
+    static final int MAX = 2;
+    private final List<T> pool = new ArrayList<>();
+    int current;
+    private final ContextConfig.ComponentProvider<T> provider;
+
+    public PooledProvider(ContextConfig.ComponentProvider<T> provider) {
+        this.provider = provider;
+    }
+
+    @Override
+    public T get(Context context) {
+        if (pool.size() < MAX) pool.add(provider.get(context));
+        return pool.get(current++ % MAX);
+    }
+
+    @Override
+    public List<ComponentRef<?>> getDependencies() {
+        return provider.getDependencies();
+    }
+}
+
 

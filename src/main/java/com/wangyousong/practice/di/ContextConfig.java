@@ -3,15 +3,22 @@ package com.wangyousong.practice.di;
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
 import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.function.Function;
 
 import static java.util.Arrays.stream;
 import static java.util.List.of;
 
 public class ContextConfig {
     private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
+    private final Map<Class<?>, Function<ComponentProvider<?>, ComponentProvider<?>>> scopes = new HashMap<>();
+
+    public ContextConfig() {
+        scope(Singleton.class, SingletonProvider::new);
+    }
 
     public <T> void bind(Class<T> type, T instance) {
         components.put(new Component(type, null), (ComponentProvider<T>) context -> instance);
@@ -38,10 +45,18 @@ public class ContextConfig {
         Optional<Annotation> scope = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst()
                 .or(() -> scopeFromType);
         ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
-        ComponentProvider<Implementation> provider = scope.map(s -> (ComponentProvider<Implementation>) new SingletonProvider<>(injectionProvider)).orElse(injectionProvider);
+        ComponentProvider<?> provider = scope.<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider)).orElse(injectionProvider);
         if (qualifiers.isEmpty()) components.put(new Component(type, null), provider);
         for (Annotation qualifier : qualifiers)
             components.put(new Component(type, qualifier), provider);
+    }
+
+    private ComponentProvider<?> getScopeProvider(Annotation scope, ComponentProvider<?> provider) {
+        return scopes.get(scope.annotationType()).apply(provider);
+    }
+
+    public <ScopeType extends Annotation> void scope(Class<ScopeType> scope, Function<ComponentProvider<?>, ComponentProvider<?>> provider) {
+        scopes.put(scope, provider);
     }
 
     static class SingletonProvider<T> implements ComponentProvider<T> {

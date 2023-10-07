@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -224,7 +226,17 @@ class ContextTest {
 
                 assertSame(context.get(ComponentRef.of(Dependency.class)).get(), context.get(ComponentRef.of(Dependency.class)).get());
             }
-            // TODO: bind component with customized scope annotation
+
+            @Test
+            void should_bind_component_as_customized_scope() {
+                config.scope(Pooled.class, PooledProvider::new);
+                config.bind(NotSingleton.class, NotSingleton.class, new PooledLiteral());
+                Context context = config.getContext();
+
+                Set<NotSingleton> instances = IntStream.range(0, 5).mapToObj(i -> context.get(ComponentRef.of(NotSingleton.class)).get()).collect(Collectors.toSet());
+
+                assertEquals(PooledProvider.MAX, instances.size());
+            }
 
             @Nested
             public class WithQualifier {
