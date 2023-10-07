@@ -1,5 +1,6 @@
 package com.wangyousong.practice.di;
 
+import jakarta.inject.Singleton;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
@@ -70,5 +71,13 @@ interface Dependency {
 
 interface AnotherDependency {
 
+}
+
+record SingletonLiteral() implements Singleton {
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return Singleton.class;
+    }
 }
 

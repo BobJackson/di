@@ -2,6 +2,7 @@ package com.wangyousong.practice.di;
 
 import jakarta.inject.Provider;
 import jakarta.inject.Qualifier;
+import jakarta.inject.Scope;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -27,11 +28,32 @@ public class ContextConfig {
         components.put(new Component(type, null), new InjectionProvider<>(implementation));
     }
 
-    public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation, Annotation... qualifiers) {
-        if (stream(qualifiers).anyMatch(q -> !q.annotationType().isAnnotationPresent(Qualifier.class)))
+    public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation, Annotation... annotations) {
+        if (stream(annotations).map(Annotation::annotationType)
+                .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class) && !t.isAnnotationPresent(Scope.class)))
             throw new IllegalComponentException();
+        List<Annotation> qualifiers = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
+        Optional<Annotation> scope = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
+        ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
+        ComponentProvider<Implementation> provider = scope.map(s -> (ComponentProvider<Implementation>) new SingletonProvider<>(injectionProvider)).orElse(injectionProvider);
+        if (qualifiers.isEmpty()) components.put(new Component(type, null), provider);
         for (Annotation qualifier : qualifiers)
-            components.put(new Component(type, qualifier), new InjectionProvider<>(implementation));
+            components.put(new Component(type, qualifier), provider);
+    }
+
+    static class SingletonProvider<T> implements ComponentProvider<T> {
+        private T singleton;
+        private final ComponentProvider<T> provider;
+
+        public SingletonProvider(ComponentProvider<T> provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public T get(Context context) {
+            if (singleton == null) singleton = provider.get(context);
+            return singleton;
+        }
     }
 
     public Context getContext() {
