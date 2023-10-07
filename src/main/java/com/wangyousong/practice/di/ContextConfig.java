@@ -47,6 +47,7 @@ public class ContextConfig {
     }
 
     private <T> ComponentProvider<?> createScopeProvider(Class<T> implementation, List<Annotation> scopes) {
+        if (scopes.size() > 1) throw new IllegalComponentException();
         ComponentProvider<T> injectionProvider = new InjectionProvider<>(implementation);
         return scopes.stream()
                 .findFirst()
