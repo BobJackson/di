@@ -211,7 +211,6 @@ class ContextTest {
                 assertSame(context.get(ComponentRef.of(NotSingleton.class)).get(), context.get(ComponentRef.of(NotSingleton.class)).get());
             }
 
-            // TODO: bind component with qualifiers as singleton scoped
             // TODO: get scope from component class
             // TODO: get scope from component with qualifiers
             // TODO: bind component with customized scope annotation
