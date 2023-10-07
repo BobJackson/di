@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Arrays.stream;
-import static java.util.List.of;
 
 public class ContextConfig {
     private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
@@ -95,13 +94,5 @@ public class ContextConfig {
         }
     }
 
-
-    interface ComponentProvider<T> {
-        T get(Context context);
-
-        default List<ComponentRef<?>> getDependencies() {
-            return of();
-        }
-    }
 
 }

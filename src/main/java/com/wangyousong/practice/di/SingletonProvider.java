@@ -2,11 +2,11 @@ package com.wangyousong.practice.di;
 
 import java.util.List;
 
-class SingletonProvider<T> implements ContextConfig.ComponentProvider<T> {
+class SingletonProvider<T> implements ComponentProvider<T> {
     private T singleton;
-    private final ContextConfig.ComponentProvider<T> provider;
+    private final ComponentProvider<T> provider;
 
-    public SingletonProvider(ContextConfig.ComponentProvider<T> provider) {
+    public SingletonProvider(ComponentProvider<T> provider) {
         this.provider = provider;
     }
 
