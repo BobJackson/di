@@ -238,7 +238,6 @@ class ContextTest {
                 assertEquals(PooledProvider.MAX, instances.size());
             }
 
-            // TODO: multi scope provided
             @Test
             void should_throw_exception_if_multi_scope_provided() {
                 assertThrows(IllegalComponentException.class, () -> config.bind(NotSingleton.class, NotSingleton.class, new SingletonLiteral(), new PooledLiteral()));
