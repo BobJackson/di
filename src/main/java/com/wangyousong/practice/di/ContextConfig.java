@@ -7,8 +7,11 @@ import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.groupingBy;
 
 public class ContextConfig {
     private final Map<Component, ComponentProvider<?>> components = new HashMap<>();
@@ -34,9 +37,12 @@ public class ContextConfig {
     }
 
     public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation, Annotation... annotations) {
-        if (stream(annotations).map(Annotation::annotationType)
-                .anyMatch(t -> !t.isAnnotationPresent(Qualifier.class) && !t.isAnnotationPresent(Scope.class)))
-            throw new IllegalComponentException();
+        // scope
+        // qualifier
+        // illegal
+        Map<? extends Class<?>, List<Annotation>> annotationGroups = stream(annotations).collect(groupingBy(this::typeOf, Collectors.toList()));
+
+        if (annotationGroups.containsKey(Illegal.class)) throw new IllegalComponentException();
         Optional<Annotation> scopeFromType = stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
 
         List<Annotation> qualifiers = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).toList();
@@ -47,6 +53,14 @@ public class ContextConfig {
         if (qualifiers.isEmpty()) components.put(new Component(type, null), provider);
         for (Annotation qualifier : qualifiers)
             components.put(new Component(type, qualifier), provider);
+    }
+
+    private Class<?> typeOf(Annotation annotation) {
+        Class<? extends Annotation> type = annotation.annotationType();
+        return Stream.of(Qualifier.class, Scope.class).filter(type::isAnnotationPresent).findFirst().orElse(Illegal.class);
+    }
+
+    private @interface Illegal {
     }
 
     private ComponentProvider<?> getScopeProvider(Annotation scope, ComponentProvider<?> provider) {
