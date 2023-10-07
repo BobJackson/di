@@ -37,22 +37,34 @@ public class ContextConfig {
     }
 
     public <T, Implementation extends T> void bind(Class<T> type, Class<Implementation> implementation, Annotation... annotations) {
-        // scope
-        // qualifier
-        // illegal
         Map<? extends Class<?>, List<Annotation>> annotationGroups = stream(annotations).collect(groupingBy(this::typeOf, Collectors.toList()));
 
         if (annotationGroups.containsKey(Illegal.class)) throw new IllegalComponentException();
-        Optional<Annotation> scopeFromType = stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
 
-        List<Annotation> qualifiers = annotationGroups.getOrDefault(Qualifier.class, Collections.emptyList());
-        Optional<Annotation> scope = annotationGroups.getOrDefault(Scope.class, Collections.emptyList()).stream().findFirst()
-                .or(() -> scopeFromType);
+        bind(type,
+                annotationGroups.getOrDefault(Qualifier.class, List.of()),
+                createScopeProvider(implementation, annotationGroups.getOrDefault(Scope.class, List.of())));
+    }
+
+    private <T, Implementation extends T> ComponentProvider<?> createScopeProvider(Class<Implementation> implementation, List<Annotation> scopes) {
         ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
-        ComponentProvider<?> provider = scope.<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider)).orElse(injectionProvider);
+        return scopes.stream()
+                .findFirst()
+                .or(() -> scopeFromType(implementation))
+                .<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider))
+                .orElse(injectionProvider);
+    }
+
+    private <T> void bind(Class<T> type, List<Annotation> qualifiers, ComponentProvider<?> provider) {
         if (qualifiers.isEmpty()) components.put(new Component(type, null), provider);
         for (Annotation qualifier : qualifiers)
             components.put(new Component(type, qualifier), provider);
+    }
+
+    private static <T> Optional<Annotation> scopeFromType(Class<T> implementation) {
+        return stream(implementation.getAnnotations())
+                .filter(a -> a.annotationType().isAnnotationPresent(Scope.class))
+                .findFirst();
     }
 
     private Class<?> typeOf(Annotation annotation) {
