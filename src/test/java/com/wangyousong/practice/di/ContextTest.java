@@ -3,10 +3,8 @@ package com.wangyousong.practice.di;
 import com.wangyousong.practice.di.InjectionTest.ConstructorInjection.Injection.InjectConstructor;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Named;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import jakarta.inject.Singleton;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -212,7 +210,19 @@ class ContextTest {
             }
 
             // TODO: get scope from component class
-            // TODO: get scope from component with qualifiers
+            @Singleton
+            static class SingletonAnnotated {
+
+            }
+
+            @Disabled
+            @Test
+            void should_retrieve_scope_annotation_from_component() {
+                config.bind(SingletonAnnotated.class, SingletonAnnotated.class);
+                Context context = config.getContext();
+
+                assertSame(context.get(ComponentRef.of(SingletonAnnotated.class)).get(), context.get(ComponentRef.of(SingletonAnnotated.class)).get());
+            }
             // TODO: bind component with customized scope annotation
 
             @Nested
