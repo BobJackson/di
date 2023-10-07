@@ -3,7 +3,10 @@ package com.wangyousong.practice.di;
 import com.wangyousong.practice.di.InjectionTest.ConstructorInjection.Injection.InjectConstructor;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -154,6 +157,24 @@ class ContextTest {
             }
 
             @Test
+            void should_retrieve_bind_type_as_provider() {
+                config.bind(TestComponent.class, instance, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
+
+                Optional<Provider<TestComponent>> provider = config.getContext().get(new ComponentRef<>(new SkywalkerLiteral()) {
+                });
+
+                assertTrue(provider.isPresent());
+            }
+
+            @Test
+            void should_retrieve_empty_if_no_matched_qualifiers() {
+                config.bind(TestComponent.class, instance);
+                Optional<TestComponent> component = config.getContext().get(ComponentRef.of(TestComponent.class, new SkywalkerLiteral()));
+
+                assertTrue(component.isEmpty());
+            }
+
+            @Test
             void should_throw_exception_if_illegal_qualifier_given_to_instance() {
                 TestComponent instance = new TestComponent() {
                 };
@@ -163,16 +184,6 @@ class ContextTest {
             @Test
             void should_throw_exception_if_illegal_qualifier_given_to_component() {
                 assertThrows(IllegalComponentException.class, () -> config.bind(InjectConstructor.class, InjectConstructor.class, new TestLiteral()));
-            }
-
-            @Test
-            void should_retrieve_bind_type_as_provider() {
-                config.bind(TestComponent.class, instance, new NamedLiteral("ChosenOne"), new SkywalkerLiteral());
-
-                Optional<Provider<TestComponent>> provider = config.getContext().get(new ComponentRef<>(new SkywalkerLiteral()) {
-                });
-
-                assertTrue(provider.isPresent());
             }
         }
     }
@@ -384,7 +395,6 @@ class ContextTest {
 
         @Nested
         public class WithQualifier {
-            @Disabled
             @ParameterizedTest
             @MethodSource
             void should_throw_exception_if_dependency_with_qualifier_not_found(Class<? extends TestComponent> component) {
@@ -398,17 +408,54 @@ class ContextTest {
             }
 
             public static Stream<Arguments> should_throw_exception_if_dependency_with_qualifier_not_found() {
-                List<Arguments> arguments = new ArrayList<>();
-                for (Named<?> component : List.of(Named.of("Inject Constructor", MissingDependencyConstructor.class),
-                        Named.of("Inject Field ", MissingDependencyField.class),
-                        Named.of("Inject Method ", MissingDependencyMethod.class)))
-                    arguments.add(Arguments.of(component));
-                return arguments.stream();
+                return Stream.of(
+                        Named.of("Inject Constructor with Qualifier", InjectConstructor.class),
+                        Named.of("Inject Field  with Qualifier", InjectField.class),
+                        Named.of("Inject Method with Qualifier", InjectMethod.class),
+                        Named.of("Provider in Inject Constructor with Qualifier", InjectConstructorProvider.class),
+                        Named.of("Provider in Inject Field  with Qualifier", InjectFieldProvider.class),
+                        Named.of("Provider in Inject Method with Qualifier", InjectMethodProvider.class)
+                ).map(Arguments::of);
             }
 
             static class InjectConstructor {
                 @Inject
                 public InjectConstructor(@Skywalker Dependency dependency) {
+                }
+            }
+
+            static class InjectField {
+                @Inject
+                @Skywalker
+                Dependency dependency;
+            }
+
+            static class InjectMethod {
+                private Dependency dependency;
+
+                @Inject
+                void install(@Skywalker Dependency dependency) {
+                    this.dependency = dependency;
+                }
+            }
+
+            static class InjectConstructorProvider {
+                @Inject
+                public InjectConstructorProvider(@Skywalker Provider<Dependency> dependency) {
+
+                }
+            }
+
+            static class InjectFieldProvider {
+                @Inject
+                @Skywalker
+                Provider<Dependency> dependency;
+            }
+
+            static class InjectMethodProvider {
+                @Inject
+                void install(@Skywalker Provider<Dependency> dependency) {
+
                 }
             }
 
