@@ -46,7 +46,7 @@ public class ContextConfig {
         Optional<Annotation> scopeFromType = stream(implementation.getAnnotations()).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst();
 
         List<Annotation> qualifiers = annotationGroups.getOrDefault(Qualifier.class, Collections.emptyList());
-        Optional<Annotation> scope = stream(annotations).filter(a -> a.annotationType().isAnnotationPresent(Scope.class)).findFirst()
+        Optional<Annotation> scope = annotationGroups.getOrDefault(Scope.class, Collections.emptyList()).stream().findFirst()
                 .or(() -> scopeFromType);
         ComponentProvider<Implementation> injectionProvider = new InjectionProvider<>(implementation);
         ComponentProvider<?> provider = scope.<ComponentProvider<?>>map(s -> getScopeProvider(s, injectionProvider)).orElse(injectionProvider);
