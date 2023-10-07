@@ -1,6 +1,5 @@
 package com.wangyousong.practice.di;
 
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.Annotation;
@@ -8,30 +7,9 @@ import java.util.Objects;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-class ContainerTest {
+record Utils() {
 
-
-    @Nested
-    public class DependenciesSelection {
-
-        @Nested
-        public class ProviderType {
-
-        }
-
-        @Nested
-        public class Qualifier {
-
-        }
-
-    }
-
-    @Nested
-    public class LifecycleManagement {
-
-    }
-
-    static record NamedLiteral(String value) implements jakarta.inject.Named {
+    record NamedLiteral(String value) implements jakarta.inject.Named {
 
         @Override
         public Class<? extends Annotation> annotationType() {
@@ -55,10 +33,10 @@ class ContainerTest {
     @java.lang.annotation.Documented
     @java.lang.annotation.Retention(RUNTIME)
     @jakarta.inject.Qualifier
-    static @interface Skywalker {
+    @interface Skywalker {
     }
 
-    static record SkywalkerLiteral() implements Skywalker {
+    record SkywalkerLiteral() implements Skywalker {
 
         @Override
         public Class<? extends Annotation> annotationType() {
@@ -71,7 +49,7 @@ class ContainerTest {
         }
     }
 
-    static record TestLiteral() implements Test {
+    record TestLiteral() implements Test {
 
         @Override
         public Class<? extends Annotation> annotationType() {

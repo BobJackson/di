@@ -167,7 +167,7 @@ class InjectionTest {
             @BeforeEach
             void setUp() {
                 Mockito.reset(context);
-                when(context.get(eq(ComponentRef.of(Dependency.class, new ContainerTest.NamedLiteral("ChosenOne")))))
+                when(context.get(eq(ComponentRef.of(Dependency.class, new Utils.NamedLiteral("ChosenOne")))))
                         .thenReturn(Optional.of(dependency));
             }
 
@@ -191,13 +191,13 @@ class InjectionTest {
             @Test
             void should_include_dependency_with_qualifier() {
                 InjectionProvider<InjectConstructor> provider = new InjectionProvider<>(InjectConstructor.class);
-                assertArrayEquals(new ComponentRef<?>[]{ComponentRef.of(Dependency.class, new ContainerTest.NamedLiteral("ChosenOne"))},
+                assertArrayEquals(new ComponentRef<?>[]{ComponentRef.of(Dependency.class, new Utils.NamedLiteral("ChosenOne"))},
                         provider.getDependencies().toArray(ComponentRef[]::new));
             }
 
             static class MultiQualifierInjectConstructor {
                 @Inject
-                public MultiQualifierInjectConstructor(@Named("ChosenOne") @ContainerTest.Skywalker Dependency dependency) {
+                public MultiQualifierInjectConstructor(@Named("ChosenOne") @Utils.Skywalker Dependency dependency) {
 
                 }
             }
@@ -284,7 +284,7 @@ class InjectionTest {
             @BeforeEach
             void setUp() {
                 Mockito.reset(context);
-                when(context.get(eq(ComponentRef.of(Dependency.class, new ContainerTest.NamedLiteral("ChosenOne")))))
+                when(context.get(eq(ComponentRef.of(Dependency.class, new Utils.NamedLiteral("ChosenOne")))))
                         .thenReturn(Optional.of(dependency));
             }
 
@@ -305,14 +305,14 @@ class InjectionTest {
             @Test
             void should_include_dependency_with_qualifier() {
                 InjectionProvider<InjectField> provider = new InjectionProvider<>(InjectField.class);
-                assertArrayEquals(new ComponentRef[]{ComponentRef.of(Dependency.class, new ContainerTest.NamedLiteral("ChosenOne"))},
+                assertArrayEquals(new ComponentRef[]{ComponentRef.of(Dependency.class, new Utils.NamedLiteral("ChosenOne"))},
                         provider.getDependencies().toArray(ComponentRef[]::new));
             }
 
             static class MultiQualifiersInjectField {
                 @Inject
                 @Named("ChosenOne")
-                @ContainerTest.Skywalker
+                @Utils.Skywalker
                 Dependency dependency;
             }
 
@@ -464,7 +464,7 @@ class InjectionTest {
             @BeforeEach
             void setUp() {
                 Mockito.reset(context);
-                when(context.get(eq(ComponentRef.of(Dependency.class, new ContainerTest.NamedLiteral("ChosenOne")))))
+                when(context.get(eq(ComponentRef.of(Dependency.class, new Utils.NamedLiteral("ChosenOne")))))
                         .thenReturn(Optional.of(dependency));
             }
 
@@ -488,13 +488,13 @@ class InjectionTest {
             @Test
             void should_include_dependency_with_qualifier() {
                 InjectionProvider<InjectMethod> provider = new InjectionProvider<>(InjectMethod.class);
-                assertArrayEquals(new ComponentRef<?>[]{ComponentRef.of(Dependency.class, new ContainerTest.NamedLiteral("ChosenOne"))},
+                assertArrayEquals(new ComponentRef<?>[]{ComponentRef.of(Dependency.class, new Utils.NamedLiteral("ChosenOne"))},
                         provider.getDependencies().toArray(ComponentRef[]::new));
             }
 
             static class MultiQualifierInjectMethod {
                 @Inject
-                void install(@Named("ChosenOne") @ContainerTest.Skywalker Dependency dependency) {
+                void install(@Named("ChosenOne") @Utils.Skywalker Dependency dependency) {
 
                 }
             }

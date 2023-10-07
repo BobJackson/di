@@ -132,11 +132,11 @@ class ContextTest {
         public class WithQualifier {
             @Test
             void should_bind_instance_with_multi_qualifiers() {
-                config.bind(TestComponent.class, instance, new ContainerTest.NamedLiteral("ChosenOne"), new ContainerTest.SkywalkerLiteral());
+                config.bind(TestComponent.class, instance, new Utils.NamedLiteral("ChosenOne"), new Utils.SkywalkerLiteral());
 
                 Context context = config.getContext();
-                TestComponent chosenOne = context.get(ComponentRef.of(TestComponent.class, new ContainerTest.NamedLiteral("ChosenOne"))).get();
-                TestComponent skywalker = context.get(ComponentRef.of(TestComponent.class, new ContainerTest.SkywalkerLiteral())).get();
+                TestComponent chosenOne = context.get(ComponentRef.of(TestComponent.class, new Utils.NamedLiteral("ChosenOne"))).get();
+                TestComponent skywalker = context.get(ComponentRef.of(TestComponent.class, new Utils.SkywalkerLiteral())).get();
 
                 assertSame(instance, chosenOne);
                 assertSame(instance, skywalker);
@@ -147,11 +147,11 @@ class ContextTest {
                 config.bind(Dependency.class, dependency);
                 config.bind(InjectConstructor.class,
                         InjectConstructor.class,
-                        new ContainerTest.NamedLiteral("ChosenOne"), new ContainerTest.SkywalkerLiteral());
+                        new Utils.NamedLiteral("ChosenOne"), new Utils.SkywalkerLiteral());
 
                 Context context = config.getContext();
-                InjectConstructor chosenOne = context.get(ComponentRef.of(InjectConstructor.class, new ContainerTest.NamedLiteral("ChosenOne"))).get();
-                InjectConstructor skywalker = context.get(ComponentRef.of(InjectConstructor.class, new ContainerTest.SkywalkerLiteral())).get();
+                InjectConstructor chosenOne = context.get(ComponentRef.of(InjectConstructor.class, new Utils.NamedLiteral("ChosenOne"))).get();
+                InjectConstructor skywalker = context.get(ComponentRef.of(InjectConstructor.class, new Utils.SkywalkerLiteral())).get();
 
                 assertSame(dependency, chosenOne.dependency);
                 assertSame(dependency, skywalker.dependency);
@@ -159,9 +159,9 @@ class ContextTest {
 
             @Test
             void should_retrieve_bind_type_as_provider() {
-                config.bind(TestComponent.class, instance, new ContainerTest.NamedLiteral("ChosenOne"), new ContainerTest.SkywalkerLiteral());
+                config.bind(TestComponent.class, instance, new Utils.NamedLiteral("ChosenOne"), new Utils.SkywalkerLiteral());
 
-                Optional<Provider<TestComponent>> provider = config.getContext().get(new ComponentRef<>(new ContainerTest.SkywalkerLiteral()) {
+                Optional<Provider<TestComponent>> provider = config.getContext().get(new ComponentRef<>(new Utils.SkywalkerLiteral()) {
                 });
 
                 assertTrue(provider.isPresent());
@@ -170,7 +170,7 @@ class ContextTest {
             @Test
             void should_retrieve_empty_if_no_matched_qualifiers() {
                 config.bind(TestComponent.class, instance);
-                Optional<TestComponent> component = config.getContext().get(ComponentRef.of(TestComponent.class, new ContainerTest.SkywalkerLiteral()));
+                Optional<TestComponent> component = config.getContext().get(ComponentRef.of(TestComponent.class, new Utils.SkywalkerLiteral()));
 
                 assertTrue(component.isEmpty());
             }
@@ -179,12 +179,12 @@ class ContextTest {
             void should_throw_exception_if_illegal_qualifier_given_to_instance() {
                 TestComponent instance = new TestComponent() {
                 };
-                assertThrows(IllegalComponentException.class, () -> config.bind(TestComponent.class, instance, new ContainerTest.TestLiteral()));
+                assertThrows(IllegalComponentException.class, () -> config.bind(TestComponent.class, instance, new Utils.TestLiteral()));
             }
 
             @Test
             void should_throw_exception_if_illegal_qualifier_given_to_component() {
-                assertThrows(IllegalComponentException.class, () -> config.bind(InjectConstructor.class, InjectConstructor.class, new ContainerTest.TestLiteral()));
+                assertThrows(IllegalComponentException.class, () -> config.bind(InjectConstructor.class, InjectConstructor.class, new Utils.TestLiteral()));
             }
         }
 
@@ -202,7 +202,6 @@ class ContextTest {
 
                 assertNotSame(context.get(ComponentRef.of(NotSingleton.class)).get(), context.get(ComponentRef.of(NotSingleton.class)).get());
             }
-
             // TODO: bind component as singleton scoped
             @Test
             void should_bind_component_as_singleton_scope() {
@@ -218,10 +217,10 @@ class ContextTest {
             public class WithQualifier {
                 @Test
                 void should_not_be_singleton_scope_by_default() {
-                    config.bind(NotSingleton.class, NotSingleton.class, new ContainerTest.SkywalkerLiteral());
+                    config.bind(NotSingleton.class, NotSingleton.class, new Utils.SkywalkerLiteral());
                     Context context = config.getContext();
 
-                    assertNotSame(context.get(ComponentRef.of(NotSingleton.class, new ContainerTest.SkywalkerLiteral())).get(), context.get(ComponentRef.of(NotSingleton.class, new ContainerTest.SkywalkerLiteral())).get());
+                    assertNotSame(context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get(), context.get(ComponentRef.of(NotSingleton.class, new Utils.SkywalkerLiteral())).get());
                 }
             }
         }
@@ -443,12 +442,12 @@ class ContextTest {
             @MethodSource
             void should_throw_exception_if_dependency_with_qualifier_not_found(Class<? extends TestComponent> component) {
                 config.bind(Dependency.class, dependency);
-                config.bind(TestComponent.class, component, new ContainerTest.NamedLiteral("Owner"));
+                config.bind(TestComponent.class, component, new Utils.NamedLiteral("Owner"));
 
                 DependencyNotFoundException e = assertThrows(DependencyNotFoundException.class, () -> config.getContext());
 
-                assertEquals(new Component(TestComponent.class, new ContainerTest.NamedLiteral("Owner")), e.getComponent());
-                assertEquals(new Component(Dependency.class, new ContainerTest.SkywalkerLiteral()), e.getDependency());
+                assertEquals(new Component(TestComponent.class, new Utils.NamedLiteral("Owner")), e.getComponent());
+                assertEquals(new Component(Dependency.class, new Utils.SkywalkerLiteral()), e.getDependency());
             }
 
             public static Stream<Arguments> should_throw_exception_if_dependency_with_qualifier_not_found() {
@@ -464,13 +463,13 @@ class ContextTest {
 
             static class InjectConstructor {
                 @Inject
-                public InjectConstructor(@ContainerTest.Skywalker Dependency dependency) {
+                public InjectConstructor(@Utils.Skywalker Dependency dependency) {
                 }
             }
 
             static class InjectField {
                 @Inject
-                @ContainerTest.Skywalker
+                @Utils.Skywalker
                 Dependency dependency;
             }
 
@@ -478,27 +477,27 @@ class ContextTest {
                 private Dependency dependency;
 
                 @Inject
-                void install(@ContainerTest.Skywalker Dependency dependency) {
+                void install(@Utils.Skywalker Dependency dependency) {
                     this.dependency = dependency;
                 }
             }
 
             static class InjectConstructorProvider {
                 @Inject
-                public InjectConstructorProvider(@ContainerTest.Skywalker Provider<Dependency> dependency) {
+                public InjectConstructorProvider(@Utils.Skywalker Provider<Dependency> dependency) {
 
                 }
             }
 
             static class InjectFieldProvider {
                 @Inject
-                @ContainerTest.Skywalker
+                @Utils.Skywalker
                 Provider<Dependency> dependency;
             }
 
             static class InjectMethodProvider {
                 @Inject
-                void install(@ContainerTest.Skywalker Provider<Dependency> dependency) {
+                void install(@Utils.Skywalker Provider<Dependency> dependency) {
 
                 }
             }
@@ -513,7 +512,7 @@ class ContextTest {
 
             static class NotCyclicDependency implements Dependency {
                 @Inject
-                public NotCyclicDependency(@ContainerTest.Skywalker Dependency dependency) {
+                public NotCyclicDependency(@Utils.Skywalker Dependency dependency) {
 
                 }
             }
@@ -522,8 +521,8 @@ class ContextTest {
             @MethodSource
             void should_not_throw_cyclic_exception_if_component_with_same_type_tagged_with_different_qualifiers(Class<? extends Dependency> notCyclic,
                                                                                                                 Class<? extends Dependency> skywalker) {
-                config.bind(Dependency.class, dependency, new ContainerTest.NamedLiteral("ChosenOne"));
-                config.bind(Dependency.class, skywalker, new ContainerTest.SkywalkerLiteral());
+                config.bind(Dependency.class, dependency, new Utils.NamedLiteral("ChosenOne"));
+                config.bind(Dependency.class, skywalker, new Utils.SkywalkerLiteral());
                 config.bind(Dependency.class, notCyclic);
 
                 assertDoesNotThrow(() -> config.getContext());
@@ -543,20 +542,20 @@ class ContextTest {
 
             static class SkywalkerInjectConstructor implements Dependency {
                 @Inject
-                public SkywalkerInjectConstructor(@ContainerTest.Skywalker Dependency dependency) {
+                public SkywalkerInjectConstructor(@Utils.Skywalker Dependency dependency) {
 
                 }
             }
 
             static class SkywalkerInjectField implements Dependency {
                 @Inject
-                @ContainerTest.Skywalker
+                @Utils.Skywalker
                 Dependency dependency;
             }
 
             static class SkywalkerInjectMethod implements Dependency {
                 @Inject
-                void install(@ContainerTest.Skywalker Dependency dependency) {
+                void install(@Utils.Skywalker Dependency dependency) {
                 }
             }
 
